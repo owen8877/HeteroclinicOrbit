@@ -1,13 +1,13 @@
-% [X, Q] = meshgrid(linspace(-2, 1), linspace(-3, 1));
-% 
-% figure
-% streamslice(X, Q, pHx(X, Q), npHq(X, Q), 'arrow');
-% hold on;
-% plot(0, 0, 'r.', 'markersize', 20);
-% plot(-1, -2, 'b.', 'markersize', 20);
-% xlabel('x');
-% ylabel('q');
-% % hold off;
+[X, Q] = meshgrid(linspace(-2, 1), linspace(-3, 1));
+
+figure
+streamslice(X, Q, pHx(X, Q), npHq(X, Q), 'arrow');
+hold on;
+plot(0, 0, 'r.', 'markersize', 20);
+plot(-1, -2, 'b.', 'markersize', 20);
+xlabel('x');
+ylabel('q');
+% hold off;
 
 startPoint = [-1 -2];
 endPoint = [0 0];
@@ -20,16 +20,16 @@ tNegativeSpan = [tMax 0];
 solutionForwards = ode45(@(t, x) pHx(x, 0), tPositiveSpan, startPoint(1));
 % figure
 % plot(t1p, x1, 'r-*')
-% xlabel('t1p')
-% ylabel('x1')
-% plot(x1, linspace(0, 0, length(x1)), 'r.')
+xlabel('t1p')
+ylabel('x1')
+plot(x1, linspace(0, 0, length(x1)), 'r.')
 
 lastx = x1;
 lastq = [];
 
 delta = [];
 
-rounds = 1000;
+rounds = 10;
 
 for round = 1:rounds
     [tn, lastq] = ode45(@(t, q) odeFuncn(t, q, solutionForwards), tNegativeSpan, endPoint(2));
@@ -40,7 +40,7 @@ for round = 1:rounds
     % ylabel('q')
     lastxForPlot = deval(solutionForwards, tn);
     delta(round) = max(lastq' - 2 * lastxForPlot .^ 3);
-    % plot(lastxForPlot, lastq, 'b.')
+    plot(lastxForPlot, lastq, 'b.')
     
     [tp, lastx] = ode45(@(t, x) odeFuncp(t, x, solutionBackwards), tPositiveSpan, startPoint(1));
     solutionForwards = ode45(@(t, x) odeFuncp(t, x, solutionBackwards), tPositiveSpan, startPoint(1));
@@ -49,10 +49,10 @@ for round = 1:rounds
     % xlabel('tp')
     % ylabel('x')
     lastqForPlot = deval(solutionBackwards, tp);
-    % plot(lastx, lastqForPlot, 'r.')
+    plot(lastx, lastqForPlot, 'r.')
 end
 
-semilogy(1:1:rounds, delta);
+% semilogy(1:1:rounds, delta);
 
 function dxdt = odeFuncp(t, x, lastSolution)
     q = deval(lastSolution, t);
