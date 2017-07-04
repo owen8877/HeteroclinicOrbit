@@ -1,33 +1,32 @@
 clear;
 clc;
 
-B = [[-1 4]; [-4 -1]];
-% B = [[-1 0.5]; [-0.5 -1]];
-p1 = [4; 1];
-x0 = [0; 0];
+% p1 = [4; 1];
+% x0 = [0; 0];
 
 xSolution = struct();
 xSolution.t = [0 1];
-xSolution.y = [[0; 1] [1; 0]];
+xSolution.y = [0 -1];
 
-C = sqrt(2);
+C = 1;
 % h = 1e-3;
 
 xEnd = [];
-drawInterval = 10;
+errorT = [];
+drawInterval = 1;
 
 %% Iteration
-for round = 1:50
-    pSolution = myODESolver(@(s, p, x) pDfunc(s, p, x, B, C), [0 1], p1, xSolution);
-    xSolution = myODESolver(@(s, x, p) xDfunc(s, x, p, B, C), [1 0], [1/round; 0], pSolution);
+for round = 1:10
+    pSolution = myODESolver(@(s, p, x) pDfunc(s, p, x, C), [0 1], -1/2^round, xSolution);
+    xSolution = myODESolver(@(s, x, p) xDfunc(s, x, p, C), [1 0], -1, pSolution);
 
     if round - fix(round / drawInterval) * drawInterval == 0
         figure
-        title(['Round ' num2str(round)])
         subplot(1,2,1);
-        plot(pSolution.y(1, :), pSolution.y(2, :));
+        plot(pSolution.t, pSolution.y);
         subplot(1,2,2);
-        plot(xSolution.y(1, :), xSolution.y(2, :));
+        plot(xSolution.t, xSolution.y);
+        title(['Round ' num2str(round)]);
     end
     
     %%
@@ -36,26 +35,25 @@ for round = 1:50
         C = C + norm(xSolution.y(:, i) - xSolution.y(:, i+1));
     end
     fprintf('Round %d completed.\n', round);
-    
-    xEnd(:, round) = xSolution.y(:, end);
+    s_ = 0:0.01:1;
+    x_ = interp1(xSolution.t', xSolution.y', s_, 'linear', 'extrap');
+    p_ = interp1(pSolution.t', pSolution.y', s_, 'linear', 'extrap');
+    errorT(round) = max(p_);
 end
 
-% for i = 1:399
-%     n(i) = norm(xEnd(:, i) - xEnd(:, i+1));
-% end
-% 
-% stem(log10(n));
+figure
+plot(1:1:10, log10(errorT));
 
-function pD = pDfunc(s, p, x, B, C)
-    b = - B * x;
-    bM = norm(b);
-    pD = C / bM * B' * p;
+function pD = pDfunc(s, p, x, C)
+    f = p + x - x^3;
+    g = p * (3*x^2 - 1);
+    pD = g / norm(f) * C;
 end
 
-function xD = xDfunc(s, x, p, B, C)
-    b = - B * x;
-    bM = norm(b);
-    xD = C / bM * (p + b);
+function xD = xDfunc(s, x, p, C)
+    f = p + x - x^3;
+    g = p * (3*x^2 - 1);
+    xD = f / norm(f) * C;
 end
 
 function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, varargin)
@@ -71,7 +69,7 @@ function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, varargin)
     
     tStart = tspan(1);
     tEnd = tspan(2);
-    h = (tEnd - tStart) / 1e3;
+    h = (tEnd - tStart) / (2^10);
     positiveDirection = tEnd > tStart;
     
     t = tStart;
@@ -95,12 +93,13 @@ function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, varargin)
         
         if useZ
             z = interp1(tArray_zSolution, zArray_zSolution, t, 'linear', 'extrap')';
-            yD = yDfunc(t, y, z);
+            z_ = interp1(tArray_zSolution, zArray_zSolution, t+h, 'linear', 'extrap')';
+            y_ = y + h * yDfunc(t, y, z);
+            y = y + h/2 * (yDfunc(t, y, z) + yDfunc(t+h, y_, z_));
         else
-            yD = yDfunc(t, y);
+            y_ = y + h * yDfunc(t, y);
+            y = y + h/2 * (yDfunc(t, y) + yDfunc(t+h, y_));
         end
-        
-        y = y + yD * h;
         
         if nextTimeQuit
             break
