@@ -6,7 +6,7 @@ clc;
 
 xSolution = struct();
 xSolution.t = [0 1];
-xSolution.y = [0 -1];
+xSolution.y = [-1 0];
 
 C = 1;
 % h = 1e-3;
@@ -15,19 +15,12 @@ xEnd = [];
 errorT = [];
 drawInterval = 1;
 
-%% Iteration
-for round = 1:10
-    pSolution = myODESolver(@(s, p, x) pDfunc(s, p, x, C), [0 1], -1/2^round, xSolution);
-    xSolution = myODESolver(@(s, x, p) xDfunc(s, x, p, C), [1 0], -1, pSolution);
+rounds = 20;
 
-    if round - fix(round / drawInterval) * drawInterval == 0
-        figure
-        subplot(1,2,1);
-        plot(pSolution.t, pSolution.y);
-        subplot(1,2,2);
-        plot(xSolution.t, xSolution.y);
-        title(['Round ' num2str(round)]);
-    end
+%% Iteration
+for round = 1:rounds
+    pSolution = myODESolver(@(s, p, x) pDfunc(s, p, x, C), [1 0], 1/2^round, xSolution, round);
+    xSolution = myODESolver(@(s, x, p) xDfunc(s, x, p, C), [0 1], -1, pSolution, round);
     
     %%
     C = 0;
@@ -38,11 +31,22 @@ for round = 1:10
     s_ = 0:0.01:1;
     x_ = interp1(xSolution.t', xSolution.y', s_, 'linear', 'extrap');
     p_ = interp1(pSolution.t', pSolution.y', s_, 'linear', 'extrap');
-    errorT(round) = max(p_);
+    errorT(round) = max(p_ - 2*(x_.^3 - x_));
+    
+    %%
+    if round - fix(round / drawInterval) * drawInterval == 0
+        figure
+%         subplot(1,2,1);
+%         plot(pSolution.t, pSolution.y);
+%         subplot(1,2,2);
+%         plot(xSolution.t, xSolution.y);
+%         title(['Round ' num2str(round)]);
+        plot(s_, p_ - 2*(x_.^3 - x_));
+    end
 end
 
 figure
-plot(1:1:10, log10(errorT));
+plot(1:1:rounds, log2(errorT));
 
 function pD = pDfunc(s, p, x, C)
     f = p + x - x^3;
@@ -56,7 +60,7 @@ function xD = xDfunc(s, x, p, C)
     xD = f / norm(f) * C;
 end
 
-function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, varargin)
+function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, round, varargin)
     %%%
     % The first row of `ySolution` is the array of time t
     %%%
@@ -69,7 +73,10 @@ function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, varargin)
     
     tStart = tspan(1);
     tEnd = tspan(2);
-    h = (tEnd - tStart) / (2^10);
+    maxStep = abs(tEnd - tStart) / (2^7);
+    minStep = abs(tEnd - tStart) / (2^23);
+    adaptCoeff = 2^8;
+    h = (tEnd - tStart) / (2^18);
     positiveDirection = tEnd > tStart;
     
     t = tStart;
@@ -88,6 +95,23 @@ function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, varargin)
     ySolution.y = [];
     
     while true
+        % adapt h
+        if ~nextTimeQuit
+            h_ = norm(y) / adaptCoeff;
+            while abs(h) < h_
+                h = h * 2;
+            end
+            while abs(h) > h_
+                h = h / 2;
+            end
+            
+            if abs(h) > maxStep
+                h = sign(h) * maxStep;
+            elseif abs(h) < minStep
+                h = sign(h) * minStep;
+            end
+        end
+        
         ySolution.t(index) = t;
         ySolution.y(:, index) = y;
         
@@ -119,5 +143,7 @@ function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, varargin)
         
         t = t + h;
         index = index + 1;
+        clc;
+        fprintf('round %d\t t %f\t h %f\n', round, t, h);
     end
 end
