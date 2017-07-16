@@ -1,21 +1,19 @@
 clear;
 clc;
 
-% p1 = [4; 1];
-% x0 = [0; 0];
-
 xSolution = struct();
 xSolution.t = [0 1];
 xSolution.y = [-1 0];
 
 C = 1;
-% h = 1e-3;
 
 xEnd = [];
 errorT = [];
 drawInterval = 1;
 
 rounds = 20;
+
+%% Constructing...
 
 %% Iteration
 for round = 1:rounds
@@ -36,12 +34,12 @@ for round = 1:rounds
     %%
     if round - fix(round / drawInterval) * drawInterval == 0
         figure
-%         subplot(1,2,1);
-%         plot(pSolution.t, pSolution.y);
-%         subplot(1,2,2);
-%         plot(xSolution.t, xSolution.y);
-%         title(['Round ' num2str(round)]);
-        plot(s_, p_ - 2*(x_.^3 - x_));
+        subplot(1,2,1);
+        plot(pSolution.t, pSolution.y);
+        subplot(1,2,2);
+        plot(xSolution.t, xSolution.y);
+        title(['Round ' num2str(round)]);
+%         plot(s_, p_ - 2*(x_.^3 - x_));
     end
 end
 
@@ -97,18 +95,25 @@ function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, round, varargin)
     while true
         % adapt h
         if ~nextTimeQuit
-            h_ = norm(y) / adaptCoeff;
-            while abs(h) < h_
-                h = h * 2;
-            end
-            while abs(h) > h_
-                h = h / 2;
-            end
-            
             if abs(h) > maxStep
                 h = sign(h) * maxStep;
             elseif abs(h) < minStep
                 h = sign(h) * minStep;
+            else
+                if useZ
+                    z = interp1(tArray_zSolution, zArray_zSolution, t, 'linear', 'extrap')';
+                    yDAppr = yDfunc(t, y, z);
+                else
+                    yDAppr = yDfunc(t, y);
+                end 
+
+                h_ = norm(yDAppr) / adaptCoeff;
+                while abs(h) < h_
+                    h = h * 2;
+                end
+                while abs(h) > h_
+                    h = h / 2;
+                end
             end
         end
         
@@ -144,6 +149,6 @@ function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, round, varargin)
         t = t + h;
         index = index + 1;
         clc;
-        fprintf('round %d\t t %f\t h %f\n', round, t, h);
+        fprintf('round %d\t t %e\t h %e\n', round, t, h);
     end
 end
