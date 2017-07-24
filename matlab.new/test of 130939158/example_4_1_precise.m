@@ -20,3 +20,4 @@ s2 = subplot(1, 2, 2);
 hold(s2, 'on');
 plot(xPrecise(1, :), xPrecise(2, :));
 plot(xPrecise(1, (1:5)*200+1), xPrecise(2, (1:5)*200+1), 'ro');
+line([-2,2],[0,0],'LineStyle','-.')
