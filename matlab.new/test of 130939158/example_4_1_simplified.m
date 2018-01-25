@@ -10,7 +10,7 @@ iterationLimit = nan;
 criterion = 1e-6;
 preciseOn = true;
 
-for depth = 3:3
+for depth = 4:4
     iteration = 0;
     p1Collection = [];
     previousP1 = [];

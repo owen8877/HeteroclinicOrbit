@@ -49,13 +49,15 @@ plot(1:1:rounds, log2(errorT));
 function pD = pDfunc(s, p, x, C)
     f = p + x - x^3;
     g = p * (3*x^2 - 1);
-    pD = g / norm(f) * C;
+    H = p*p / 2 + p*(x-x^3);
+    pD = g / sqrt(f^2-2*H) * C;
 end
 
 function xD = xDfunc(s, x, p, C)
     f = p + x - x^3;
     g = p * (3*x^2 - 1);
-    xD = f / norm(f) * C;
+    H = p*p / 2 + p*(x-x^3);
+    xD = f / sqrt(f^2-2*H) * C;
 end
 
 function ySolution = myODESolver(yDfunc, tspan, y0, zSolution, round, varargin)
