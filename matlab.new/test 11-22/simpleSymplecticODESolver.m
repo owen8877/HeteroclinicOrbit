@@ -7,7 +7,7 @@ function xSolution = simpleSymplecticODESolver(xDfunc, tspan, x0, zSolution, res
     directionPos = tEnd > tStart;
     
     x = x0;
-    xSolution = zeros(size(x0, 1), resolution+1);
+    xSolution = zeros(size(x0, 1), round(resolution+1));
     
     ignoreZ = size(zSolution, 2) < resolution;
     
@@ -15,7 +15,7 @@ function xSolution = simpleSymplecticODESolver(xDfunc, tspan, x0, zSolution, res
         if directionPos
             realIndex = index;
         else
-            realIndex = resolution + 2 - index;
+            realIndex = round(resolution + 2) - index;
         end
         
         % record x

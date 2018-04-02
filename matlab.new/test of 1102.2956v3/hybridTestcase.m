@@ -6,7 +6,7 @@ L = @(y) y + (y - 1) * fTilde(y, param) / gTilde(y, param);
 yZList = findAlmostAllZeroPoint(L, 0, 0.8, 0.005);
 
 %% find the stable point in x-y-px-py space
-yLeft = yZList(3);
+yLeft = yZList(1);
 yRight = yZList(2);
 lStable = findZero(@(v) DH(v, param), [1/param.gamma; yLeft; 0; 0]);
 lStable = lStable(1:2);
@@ -16,6 +16,8 @@ resolution = 1e4;
 C = norm(lStable - rStable);
 iteration = 0;
 iterationLimit = 1;
+
+return
 
 lHess = notOrdinaryHessian(@(v) Hfunc(v(1:2), v(3:4), param), [lStable; 0; 0]);
 rHess = notOrdinaryHessian(@(v) Hfunc(v(1:2), v(3:4), param), [rStable; 0; 0]);

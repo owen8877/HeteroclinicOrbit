@@ -1,4 +1,6 @@
-clc; clear;
+clc; clear
+
+load initialSolution.mat
 
 % init
 q1Stable = -1/sqrt(2);
@@ -18,20 +20,72 @@ rHessian = nddH(rVal);
 rAnchor = rVal + real(rV(:, 3)) / resolution;
 lAnchor = lVal - real(lV(:, 3)) / resolution;
 
-%% Search part
-V = lV; V(:, [1 3]) = lV(:, [3 1]);
-solution = simpleSymplecticSearch(@(~, v, ~) dHn(v(1:2), v(3:4)), ...
-    rAnchor, lVal, -1/resolution, 1, V);
+%%
+solution = initialSolution;
+richPlotHelper(0, solution, lVal, rVal, rVal2, @Hfunc, @dH);
 
-% newSolution = solution;
-initialSolution = pulling(solution, 0.5, 3, lAnchor);
-initialSolution = fliplr(initialSolution);
-
-richPlotHelper(0, initialSolution, lVal, rVal, rVal2, @Hfunc, @dH);
+for itr = 1:1000
+    for i = 2:size(solution, 2)-1
+        qp = solution(:, i);
+        qpprevious = solution(:, i-1);
+        qpnext = solution(:, i+1);
+        updateD = - 0.1 * gradient(qp, qpprevious, qpnext);
+        solution(:, i) = qp + updateD;
+    end
+    if mod(itr, 10) == 0
+%     	richPlotHelper(itr, solution, lVal, rVal, rVal2, @Hfunc, @dH);
+    end
+    if mod(itr, 10) == 0
+        % clc
+        fprintf('Itr\t%d\n', itr);
+    	richReportHelper(itr, solution, lVal, rVal, rVal2, @Hfunc, @dH);
+    end
+end
+richPlotHelper(itr, solution, lVal, rVal, rVal2, @Hfunc, @dH);
 
 %%
+function g = gradient(v, vprevious, vnext)
+    lambda = 5;
+    gH = nablaH(v(1:2), v(3:4));
+    
+    hz = dH(vprevious(1:2), vprevious(3:4));
+    deltaz = v - vprevious;
+    w = hz*norm(deltaz) - deltaz*norm(hz);
+    nablahz = nddH(vprevious);
+%     nablaw = nablahz*norm(deltaz) + hz*deltaz'/norm(deltaz) ...
+%         - eye(4)*norm(hz) - deltaz * (hz' * nablahz) / norm(hz);
+    nablaw = hz*deltaz'/norm(deltaz) - eye(4)*norm(hz);
+
+    hz_ = dH(vnext(1:2), vnext(3:4));
+    deltaz_ = vnext - v;
+    w_ = hz_*norm(deltaz_) - deltaz_*norm(hz_);
+    nablahz_ = nddH(v);
+%     nablaw_ = nablahz_*norm(deltaz_) - hz_*deltaz_'/norm(deltaz_) ...
+%         + eye(4)*norm(hz_) - deltaz_ * (hz_' * nablahz_) / norm(hz_);
+    nablaw_ = 0 - hz_*deltaz_'/norm(deltaz_) + eye(4)*norm(hz_);
+
+    % g = 2*gH*Hfunc(v(1:2), v(3:4)) + lambda * 2 * (w'*nablaw + w_'*nablaw_)';
+    g = lambda * 2 * (w'*nablaw + w_'*nablaw_)';
+    % g = 2*gH*Hfunc(v(1:2), v(3:4)) + lambda * 2 * (w'*nablaw)';
+
+%     dHz = dH(vprevious(1:2), vprevious(3:4));
+%     dz = v - vprevious;
+%     Lz = dHz - normalize(dz)*norm(dHz);
+%     r = norm(dz);
+%     dLz = 0 - (eye(4)/r-dz*dz'/(r^3)) * norm(dHz);
+%     g = 2*gH*Hfunc(v(1:2), v(3:4)) + lambda*2*(dLz*Lz);
+end
+
+function nv = normalize(v)
+    nv = v / norm(v);
+end
+
 function dHv = dH(q, p)
     dHv = [Hpfunc(q, p); -Hqfunc(q, p)];
+end
+
+function dHv = nablaH(q, p)
+    dHv = [Hqfunc(q, p); Hpfunc(q, p)];
 end
 
 function dHnv = dHn(q, p)
@@ -51,6 +105,7 @@ function dHdqnv = dHdqn(q, p)
     dHdqnv = dHnv(1:2);
 end
 
+% needs checking
 function nddHp = nddH(v)
     q1 = v(1); q2 = v(2); p1 = v(3); p2 = v(4);
     nddHp = [0 1 0 0; ddf(q1)*q2 df(q1) 0 0.5; ...
