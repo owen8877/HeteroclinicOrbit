@@ -11,42 +11,29 @@ q1Saddle = 0;
 % ry = 0.213036044900658;
 % rVal = [rx; ry; 0; 0];
 % % for prob cases
-% lVal = [q1Stable; 0; 0; 0];
-% rVal = [q1Saddle; 0; 0; 0];
+% lVal = [-1; 0; 0; 0];
+% rVal = [-0.6; 0; 0; 0];
 % for self-made cases
 lVal = [-1; -1; 0; 0];
 rVal = [0; 0; 0; 0];
 
 resolution = 3000;
-
-lHessian = notOrdinaryHessian(@(v) Hfunc(v(1:2), v(3:4)), lVal);
-% lHessian = nddH(lVal);
-[lV, lD] = eigs(lHessian, size(lHessian, 1), 'lr');
-rHessian = notOrdinaryHessian(@(v) Hfunc(v(1:2), v(3:4)), rVal);
-% rHessian = nddH(rVal);
-[rV, rD] = eigs(rHessian, size(rHessian, 1), 'lr');
 leftSide = false;
 gridSearch = false;
 
-%% here the right anchor has two stable manifold, which can take as tests.
-% lAnchor = lVal + real(lV(:, 4)) / resolution;
-% solution = simpleSymplecticSearch(@(~, v, ~) dHn(v(1:2), v(3:4)), ...
-%     lAnchor, rVal, 1/resolution, 0, rV(:, end));
-% % richPlotHelper(0, solution, lVal, rVal, rVal, @Hfunc, @dH);
-% 
-% fai = atan(2.8);
-% rAnchor = rVal + (cos(fai) * rV(:, 1) + sin(fai) * rV(:, 2)) / resolution;
-% initialSolution = pulling(solution, 0.05, 3, rAnchor);
-% % richPlotHelper(0, initialSolution, lVal, rVal, rAnchor, @Hfunc, @dH);
-% 
-% T = (size(initialSolution, 2) - 1) / resolution;
-% q1Solution = initialSolution;
-% q1Solution(1:2, :) = simpleSymplecticODESolver(@(t, q, p) dHdqn(q, p), ...
-%     [T 0], rAnchor(1:2), initialSolution(3:4, :), size(initialSolution, 2) - 1);
-% richPlotHelper(0, q1Solution, lVal, rVal, rAnchor, @Hfunc, @dH);
+lHessian = notOrdinaryHessian(@(v) Hfunc(v(1:2), v(3:4)), lVal);
+[lV, lD] = eigs(lHessian, size(lHessian, 1), 'lr');
+rHessian = notOrdinaryHessian(@(v) Hfunc(v(1:2), v(3:4)), rVal);
+[rV, rD] = eigs(rHessian, size(rHessian, 1), 'lr');
 
-%% The following code gives a set of possible initial angle between eigen directions
-fais = linspace(0, 2*pi, 100)';
+disp([lD rD]);
+disp([lV rV]);
+
+%%
+% The following code gives a set of possible initial angle between eigen 
+% directions
+
+fais = linspace(0, 2*pi, 500)';
 fais = fais(2:end);
 distance = [];
 notice = [];
@@ -65,23 +52,45 @@ if gridSearch
     plot(fais, distance);
 end
 
-%% The following code searches for the minimal value
+%%
+% The following code searches for the minimal value
+
 % initial = notice(1);
 % initial = 0.4649557127; % for self-made cases on the right, L=3
-initial = 0.3769; % for self-made cases on the right, L=5
-% initial = 1.55823; % for prob cases
+% initial = 0.3769; % for self-made cases on the right, L=5
+initial = 0.3896; % with 0.2011, 0.3896, 0.5027, 0.8168, 1.2315, 4.9763
+% a possible homoclinic trajectory
+% initials = [
+%     0.0754
+%     0.1634
+%     0.4021
+%     0.5404
+%     0.6660
+%     0.9173
+%     1.0053
+%     1.3320
+%     1.7216
+%     1.8347
+%     1.8975
+%     2.1865
+%     2.4379
+%     2.6389
+%     2.8400
+%     2.9657
+%     ];
+% initial = 4.1552; % for prob cases
 % initial = 4; % for bio cases
 % initial = 2; % for self-made cases on the left, L=3
 step = pi/1000;
 
-[initialDis, ~] = simplexSearchWrapper(initial, leftSide, lVal, rVal, lV, rV, ...
-    lD, rD, @dHn, resolution);
+[initialDis, ~] = simplexSearchWrapper(initial, leftSide, lVal, rVal, ...
+    lV, rV, lD, rD, @dHn, resolution);
 fprintf('Init dis %.4e\n', initialDis);
 
 for leftMulti = 1:20
     fai = initial - (leftMulti+1) * step;
-    [dis, ~] = simplexSearchWrapper(fai, leftSide, lVal, rVal, lV, rV, ...
-        lD, rD, @dHn, resolution);
+    [dis, ~] = simplexSearchWrapper(fai, leftSide, lVal, rVal, ...
+        lV, rV, lD, rD, @dHn, resolution);
     fprintf('LeftMulti %d distance %.4e\n', leftMulti, dis);
     if dis > initialDis
         break
@@ -89,8 +98,8 @@ for leftMulti = 1:20
 end
 for i = 1:10
     left = initial - (leftMulti+2^(-i)) * step;
-    [dis, ~] = simplexSearchWrapper(left, leftSide, lVal, rVal, lV, rV, ...
-        lD, rD, @dHn, resolution);
+    [dis, ~] = simplexSearchWrapper(left, leftSide, lVal, rVal, ...
+        lV, rV, lD, rD, @dHn, resolution);
     fprintf('Lefti %d distance %.4e\n', i, dis);
     if dis < initialDis
         break
@@ -99,8 +108,8 @@ end
 
 for rightMulti = 1:20
     fai = initial + (rightMulti+1) * step;
-    [dis, ~] = simplexSearchWrapper(fai, leftSide, lVal, rVal, lV, rV, ...
-        lD, rD, @dHn, resolution);
+    [dis, ~] = simplexSearchWrapper(fai, leftSide, lVal, rVal, ...
+        lV, rV, lD, rD, @dHn, resolution);
     fprintf('RightMulti %d distance %.4e\n', rightMulti, dis);
     if dis > initialDis
         break
@@ -108,8 +117,8 @@ for rightMulti = 1:20
 end
 for i = 1:10
     right = initial + (rightMulti+2^(-i)) * step;
-    [dis, ~] = simplexSearchWrapper(right, leftSide, lVal, rVal, lV, rV, ...
-        lD, rD, @dHn, resolution);
+    [dis, ~] = simplexSearchWrapper(right, leftSide, lVal, rVal, ...
+        lV, rV, lD, rD, @dHn, resolution);
     fprintf('Righti %d distance %.4e\n', i, dis);
     if dis < initialDis
         break
@@ -117,16 +126,18 @@ for i = 1:10
 end
 
 leftValueKnown = false; rightValueKnown = false;
-for step = 1:20
-    midleft = right - (right-left) * 0.618;
-    midright = left + (right-left) * 0.618;
+for step = 1:10
+    midleft = right - (right-left) * (sqrt(5)-1)/2;
+    midright = left + (right-left) * (sqrt(5)-1)/2;
     if ~leftValueKnown
-        [midleftValue, solution] = simplexSearchWrapper(midleft, leftSide, ...
+        [midleftValue, solution] = ...
+            simplexSearchWrapper(midleft, leftSide, ...
             lVal, rVal, lV, rV, lD, rD, @dHn, resolution);
     end
     
     if ~rightValueKnown
-        [midrightValue, solution] = simplexSearchWrapper(midright, leftSide, ...
+        [midrightValue, solution] = ...
+            simplexSearchWrapper(midright, leftSide, ...
             lVal, rVal, lV, rV, lD, rD, @dHn, resolution);
     end
     
@@ -144,16 +155,20 @@ for step = 1:20
         leftValueKnown = true;
     end
 end
-richPlotHelper(0, solution, lVal, rVal, lVal, @Hfunc, @dH);
+richPlotHelper(0, solution, lVal, rVal, lVal, @Hfunc, @dH, ...
+    struct('extraPlot', true));
+fprintf('initial %.4e final %.4e\n', initial, left);
+save('data/solution.mat', 'solution');
 
 %%
 function [distance, solution] = simplexSearchWrapper(fai, leftSide, lVal, rVal, lV, rV, lD, rD, dHn, resolution)
     if ~leftSide
         rAnchor = rVal + (rV(:, 1)*sin(fai) + rV(:, 2)*cos(fai)) / resolution;
+        lV_ = lV;
+        lV_(:, [1 4]) = lV_(:, [4 1]);
         solution = simpleSymplecticSearch(@(~, v, ~) dHn(v(1:2), v(3:4)), ...
-            rAnchor, lVal, -1/resolution, 0, real(lV(:, end)), struct('output', false));
+            rAnchor, lVal, -1/resolution, 0, real(lV_(:, 1)), struct('output', false));
         solution = fliplr(solution);
-        % richPlotHelper(0, solution, lVal, rVal, lVal, @Hfunc, @dH);
         distance = norm(lVal - solution(:, 1));
     else
         if isreal(lD(3, 3))
@@ -164,9 +179,10 @@ function [distance, solution] = simplexSearchWrapper(fai, leftSide, lVal, rVal, 
         end
         lAnchor = lVal + delta / resolution;
         solution = simpleSymplecticSearch(@(~, v, ~) dHn(v(1:2), v(3:4)), ...
-            lAnchor, rVal, 1/resolution, 2, real(rV(:, 1)), struct('output', false));
+            lAnchor, rVal, 1/resolution, 0, real(rV(:, 1)), struct('output', false));
         distance = norm(rVal - solution(:, end));
     end
+    % richPlotHelper(0, solution, lVal, rVal, lVal, @Hfunc, @dH, struct());
 end
 
 %%
@@ -199,15 +215,7 @@ function dHdqnv = dHdqn(q, p)
     dHdqnv = dHnv(1:2);
 end
 
-% needs checking
-% function nddHp = nddH(v)
-%     q1 = v(1); q2 = v(2); p1 = v(3); p2 = v(4);
-%     error('blabla');
-%     nddHp = [0 1 0 0; ddf(q1)*q2 df(q1) 0 0.5; ...
-%         (-p2*q2*dddf(q1)+2*ddf(q1)*f(q1)+2*(df(q1))^2-2*ddf(q1)*q2) ...
-%         (-p2*ddf(q1)-2*df(q1)) 0 (-ddf(q1)*q2); ...
-%         (-p2*ddf(q1)-2*df(q1)) 2 -1 -df(q1)];
-% end
+%% Self-made case
 
 function Hpv = Hpfunc(q, p)
     p1 = p(1); p2 = p(2);
@@ -232,15 +240,7 @@ function H = Hfunc(q, p)
 end
 
 %% prob H func
-% needs checking
-% function nddHp = nddH(v)
-%     q1 = v(1); q2 = v(2); p1 = v(3); p2 = v(4);
-%     nddHp = [0 1 0 0; ddf(q1)*q2 df(q1) 0 0.5; ...
-%         (-p2*q2*dddf(q1)+2*ddf(q1)*f(q1)+2*(df(q1))^2-2*ddf(q1)*q2) ...
-%         (-p2*ddf(q1)-2*df(q1)) 0 (-ddf(q1)*q2); ...
-%         (-p2*ddf(q1)-2*df(q1)) 2 -1 -df(q1)];
-% end
-% 
+
 % function Hpv = Hpfunc(q, p)
 %     p1 = p(1); p2 = p(2);
 %     q1 = q(1); q2 = q(2);
@@ -260,34 +260,31 @@ end
 % end
 % 
 % function fv = f(x)
-%     % fv = -(5*x^4 + 8*x^3 + 3*x^2);
-%     % fv = 12*x^3 + 12*x^2;
-%     % fv = 2*x^3 - x/2;
-%     fv = 4*x^3 - 2*x;
+% %     fv = 5*x^5 + 8*x^4 + 3*x^3;
+%     fv = -(5*x^4 + 8*x^3 + 3*x^2);
+% %     fv = 12*x^3 + 12*x^2;
+% %     fv = 2*x^3 - x/2;
+% %     fv = 4*x^3 - 2*x;
 % end
 % 
 % function dfv = df(x)
-%     % dfv = -(20*x^3 + 24*x^2 + 6*x);
-%     % dfv = 36*x^2 + 24;
-%     % dfv = 6*x^2 - 1/2;
-%     dfv = 12*x^2 - 2;
+% %     dfv = 25*x^4 + 32*x^3 + 9*x^2;
+%     dfv = -(20*x^3 + 24*x^2 + 6*x);
+% %     dfv = 36*x^2 + 24*x;
+% %     dfv = 6*x^2 - 1/2;
+% %     dfv = 12*x^2 - 2;
 % end
 % 
 % function ddfv = ddf(x)
-%     % ddfv = -(60*x^2 + 48*x + 6);
-%     % ddfv = 72*x + 24;
-%     % ddfv = 12*x;
-%     ddfv = 24*x;
-% end
-% 
-% function dddfv = dddf(x)
-%     % dddfv = -(120*x + 48);
-%     % dddfv = 72;
-%     % dddfv = 12;
-%     dddfv = 24;
+% %     ddfv = 100*x^3 + 96*x^2 + 18*x;
+%     ddfv = -(60*x^2 + 48*x + 6);
+% %     ddfv = 72*x + 24;
+% %     ddfv = 12*x;
+% %     ddfv = 24*x;
 % end
 
 %% bio H func
+
 % function dqHv = Hqfunc(q, p)
 %     h = 1e-8;
 %     dqHv = [ ...

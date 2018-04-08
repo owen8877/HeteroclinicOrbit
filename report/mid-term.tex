@@ -1,0 +1,137 @@
+\documentclass[]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage[]{algorithm2e}
+\usepackage{xeCJK}
+\setmainfont{Times New Roman}
+\setCJKmainfont{WenQuanYi Zen Hei}
+\parindent 2em
+\title{对初始方向使用优化方法计算异宿轨}
+\author{陈子恒}
+
+\begin{document}
+\maketitle
+
+\section{目前可用于测试的样例}
+\begin{enumerate}
+	\item 一个简单的一维/二维问题，它们的 Hamilton 量分别是
+	$$
+	H_1 = \dfrac{1}{2} p^2 + p(q - q^3)
+	$$
+	$$
+	H_2^{(L)} = \dfrac{p_1^2 + p_2^2}{2} + p_1(q_1 - q_1^3) + p_2(q_2 - q_2^3) + \left[(q_2^2-1)q_1^2-L(q_1^2-1)q_2^2\right]^2
+	$$
+	对应的解析解分别为
+	$$
+	(q, p) = (t, 2(t^3 - t)), t \in [-1, 0]
+	$$
+	$$
+	(q_1, q_2, p_1, p_2) = \left(t \sqrt{\dfrac{L}{1+(L-1)t^2}}, t, 2(q_1^3-q_1), 2(t^3-t)\right), t \in [-1, 0]
+	$$
+	\item 二维问题，其 Hamilton 量为
+	$$
+	H = A + \tilde{g}(q_2)^{−1} [A + b^{-1} (e^{p_1} − 1)] [\tilde{f}(q_2) − A]
+	$$
+	这里 $A = q_2(e^{−p_2} − 1) + \gamma q_1(e^{−p_1} − 1) + \gamma bq_1(e^{p_2} − 1)$ 。 \\
+	根据问题的背景我们可以将这个问题做近似 $q_1 = \mathcal{O}(\gamma ^{−1}), p_1 = −\text{ln}(1 + b − b e^{p_2})$ ，得到一维的简化问题
+	$$
+	H_r = (z^{-1}-1) \left\{p_2 + \left[p_2 + \dfrac{z}{b(z-1)-1}\right] \left[\dfrac{\tilde{f}(p_2) - p_2(z^{-1}-1)}{\tilde{g}(p_2)}\right]\right\}, z = e^{p_2}
+	$$
+	\item 二维问题，其 Hamilton 量为
+	$$
+	H = p_1q_2 + p_2\left[\dfrac{1}{4}p_2+f'(q_1)q_2\right] - (q_2-f(q_1))^2
+	$$
+	这里 $f$ 具有至少两个零点。
+\end{enumerate}
+
+\section{算法概述}
+算法实现如下：
+
+\begin{algorithm}[H]
+\KwData{Hamilton 量 $H$ ，平衡点 $(q_1, p_1), (q_2, p_2)$}
+\KwResult{异宿轨解}
+\While{搜索初始方向 $(u, v)$}{
+	估算解的最大范围\;
+	以 $(q_1, p_1) + d(u, v)$ 为初始点开始求解重参数化的 Hamilton 方程组\;
+	\While{解的末端位置在边界范围内}{
+		使用某种辛格式的数值格式积分一步\;
+		\If{解的末端位置与另一个平衡点非常接近}{
+			记录 $(u,v)$ 为可以进一步优化的初始方向\;
+			停止搜索\;
+		}
+	}
+}
+\ForEach{上一步记录的 $(u, v)$}{
+	从 $(u, v)$ 出发，使用优化方法寻找使得解的末端与另一个平衡点最近的初始方向
+}
+\caption{异宿轨的简单求解算法}
+\end{algorithm}
+我们逐个考虑上述算法的具体实现。
+
+\subsection{初始方向的可能集合}
+考虑重参数化后的轨线 $(q, p) = (q(s), p(s))$ 在 $s \to \{0, 1\}$ 的行为。
+\\
+假定 $\text{lim}_{s\to 0} \dfrac{q(s) - q(0)}{p(s) - p(0)}$ 与 $\text{lim}_{s\to 1} \dfrac{q(s) - q(1)}{p(s) - p(1)}$ 存在。
+令 $\delta q(s) = q(s) - q(0), \delta p(s) = p(s) - p(0)$，由于
+\begin{align*}
+\delta \dot{q}(s) &= \dot{q}(s) \dfrac{dt}{ds} = H_p(s) \dfrac{dt}{ds} \\
+&= \left(H_p(0) + H_{pp} \delta p(s) + H_{pq} \delta q(s) + \mathcal{O}(s^2)\right) \dfrac{dt}{ds} \\
+&= \left(H_{pp} \delta p(s) + H_{pq} \delta q(s) \right) \dfrac{dt}{ds} + \mathcal{O}(s^2) \\
+\delta \dot{p}(s) &= -\left(H_{qp} \delta p(s) + H_{qq} \delta q(s) \right) \dfrac{dt}{ds} + \mathcal{O}(s^2)
+\end{align*}
+于是 $\text{lim}_{s\to 0} \textbf{normal}(\delta q(s), \delta p(s)) = (u, v)$ 是如下特征值问题的解：
+$$
+\lambda \begin{bmatrix} u \\ v \end{bmatrix} = L_H(0) \begin{bmatrix} u \\ v \end{bmatrix} , L_H = \begin{bmatrix} \partial_{pq} & \partial_{pp} \\ -\partial_{qq} & -\partial_{qp} \end{bmatrix} H
+$$
+这里 $\textbf{normal}(\textbf{x}) = \dfrac{\textbf{x}}{||\textbf{x}||}$ 。
+\\
+如果 $L_H$ 是可对角化的，那么 $\text{lim}_{s \to 0}(\delta q(s), \delta p(s))$ 应当落在 $L_H(0)$ 的最大特征值对应的特征子空间，而 $\text{lim}_{s \to 1}(\delta q(1), \delta p(1))$ 应当落在 $L_H(1)$ 的最小特征值（此时应是负的）对应的特征子空间。
+
+\subsection{初始方向的搜索}
+考虑如果这个 Hamilton 系统是 $(q, p)$ 各一维的，那么 $L_H$ 仅有一个正特征值和一个负特征值，于是 $(u, v)$ 没有其他的选择，至多差一个正负号。
+\\
+如果这个系统是 $(q, p)$ 各两维的，那么可能会出现如下的三种情况：
+\begin{enumerate}
+	\item $L_H$ 有两个不相等的正特征根，于是 $(u, v)$ 应取为 $L_H(0)$ 的最大特征值对应的特征向量。
+	\item $L_H$ 有两个相等的正特征根，对应的特征向量为 $w_1$ 与 $w_2$ ，于是 $(u, v)$ 应取为 $\text{sin}(\varphi)w_1 + \text{cos}(\varphi)w_2$ 。
+	\item $L_H$ 有一个正特征根，两个共轭的纯虚根，？？？。
+\end{enumerate}
+我们着力考察上述的第二种情况。由于我们对于平衡点和 $H$ 的性质没有太多的假设，我们必须对 $\varphi \in [0, 2\pi)$ 做大范围的搜索，确定可能的 $\varphi$ 的取值范围后才能使用优化策略求解。这里的搜索是做等分的细网格。
+
+\subsection{辛格式的选取}
+由于这是一个 Hamilton 系统，因此如果简单地使用一阶算法，通常不能够保证 Hamilton 量的守恒性质。
+\textbf{这里插一张一阶前向的H图}
+基于此，我们需要使用具有 \emph{保能量} 性质的数值格式。这里我们有两种选择：
+\begin{enumerate}
+	\item \textbf{带预估矫正的一阶 Euler 格式}。
+	\item \textbf{隐式二阶 Runge-Kutta 格式}。
+\end{enumerate}
+然而由于这些格式都是隐式的，所以我们需要进行一些简单的迭代步骤获得它们的中间解。步骤如下：
+
+\begin{algorithm}[H]
+	\KwData{初始点 $x$ 与步长 $h$}
+	\KwResult{更新点 $x^*$}
+	wawa
+	\caption{带预估矫正的一阶 Euler 格式的数值实现}
+\end{algorithm}
+\begin{algorithm}[H]
+	\KwData{初始点 $x$ 与步长 $h$}
+	\KwResult{更新点 $x^*$}
+	blbla
+	\caption{隐式二阶 Runge-Kutta 格式的数值实现}
+\end{algorithm}
+\subsection{解的终止条件}
+与简单的打靶法不同，在搜索过程中我们并不知道轨线的总长度，因此必须采取其他的方法确定轨线是否已经到另一个平衡点 $(q_r, p_r)$ 附近。这里我们有如下几种可能的终止条件：
+\begin{itemize}
+	\item \textbf{距离充分接近}。即当 $|(q_i, p_i) - (q_r, p_r)| < \epsilon$ 时认为轨线已经到达右边的平衡点。
+	\item \textbf{与右端点在目标子空间上的投影分量足够接近 1}。
+\end{itemize}
+\subsection{初始方向的优化方法}
+由于从初始方向到轨线最终的残差的映射是一个流映射，因此我们几乎无法求得这个流映射的梯度，只能够使用一维的二分法或者三分法进行估算。
+
+\section{数值结果}
+\subsection{非平凡解的存在性问题}
+\subsection{辛格式的精度}
+\subsection{数值格式步长的选取}
+\end{document}

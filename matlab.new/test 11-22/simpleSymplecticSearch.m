@@ -7,7 +7,7 @@ function xSolution = simpleSymplecticSearch(xDfunc, origin, target, step, ...
         options.endCriterion = 2;
     end
     if ~isfield(options, 'method')
-        options.method = 'euler';
+        options.method = 'rk';
     end
     
     h = step;
@@ -15,7 +15,7 @@ function xSolution = simpleSymplecticSearch(xDfunc, origin, target, step, ...
     
     x = origin;
     xSolution = zeros(size(origin, 1), max(floor(abs(2/step)), 1e4));
-    nearFlag = false;
+    nearFlag = -1; % -1 from beginning, 0 for outside equilibrium, 1 for near
     modifiedLastDistance = -Inf;
     mu = 10;
     if mode == 0 % direction
@@ -58,26 +58,33 @@ function xSolution = simpleSymplecticSearch(xDfunc, origin, target, step, ...
         index = index + 1;
         
         % see close enough
-        if norm(target-x) < abs(h) * 100
+%         if norm(target-x) < abs(h) * 100
+        if norm(target-x) < 0.1
             if mode == 0 % direction
                 tmpDistance = norm(target-x) + mu * res(x, indicator);
             elseif mode == 1 % decomp matrix
                 tmpDistance = indicator' * (target-x);
                 tmpDistance = abs(tmpDistance) / norm(tmpDistance);
-                tmpDistance = tmpDistance(1);
+                tmpDistance = -tmpDistance(1);
             elseif mode == 2 % distance mode
                 tmpDistance = norm(target-x);
             end
             
-            if ~nearFlag
-                nearFlag = true;
+            if nearFlag == 0
+                nearFlag = 1;
                 modifiedLastDistance = tmpDistance;
-            elseif modifiedLastDistance < tmpDistance
-            % elseif tmpDistance < 0.3
-                xSolution = xSolution(:, 1:index-1);
-                break
-            else
-                modifiedLastDistance = tmpDistance;
+            elseif nearFlag == 1
+                if modifiedLastDistance < tmpDistance
+                % elseif tmpDistance < 0.3
+                    xSolution = xSolution(:, 1:index-1);
+                    break
+                else
+                    modifiedLastDistance = tmpDistance;
+                end
+            end
+        else
+            if nearFlag == -1
+                nearFlag = 0;
             end
         end
         

@@ -1,7 +1,16 @@
-function xSolution = simpleSymplecticODESolver(xDfunc, tspan, x0, zSolution, resolution)
-    % xDfunc(t, x, z), tspan, x0, zSolution, resolution
+function xSolution = simpleSymplecticODESolver(xDfunc, tspan, x0, ...
+    zSolution, resolution, options)
+    if ~isfield(options, 'output')
+        options.output = true;
+    end
+    if ~isfield(options, 'method')
+        options.method = 'rk';
+    end
+    
     tStart = tspan(1);
     tEnd = tspan(2);
+    lMagic = 1 - 2/sqrt(3);
+    hMagic = 1 + 2/sqrt(3);
     h = (tEnd - tStart) / resolution;
     t = tStart;
     directionPos = tEnd > tStart;
@@ -26,12 +35,28 @@ function xSolution = simpleSymplecticODESolver(xDfunc, tspan, x0, zSolution, res
         else
             z = zSolution(:, realIndex);
         end
-        k = x;
-        k = x + h/2 * xDfunc(t, k, z);
-        k = x + h/2 * xDfunc(t, k, z);
-        x = x + h * xDfunc(t, k, z);
+        switch options.method
+            case 'euler'
+                k = x;
+                k = x + h/2 * xDfunc(t, k, z);
+                k = x + h/2 * xDfunc(t, k, z);
+                x = x + h * xDfunc(t, k, z);
+            case 'rk'
+                K1 = x + (xDfunc(t, x, z)+xDfunc(t, x, z)*lMagic) * h/4;
+                K1 = x + (xDfunc(t, K1, z)+xDfunc(t, x, z)*lMagic) * h/4;
+                K1 = x + (xDfunc(t, K1, z)+xDfunc(t, x, z)*lMagic) * h/4;
+                K2 = x + (xDfunc(t, K1, z)*hMagic+xDfunc(t, x, z)) * h/4;
+                K2 = x + (xDfunc(t, K1, z)*hMagic+xDfunc(t, K2, z)) * h/4;
+                K2 = x + (xDfunc(t, K1, z)*hMagic+xDfunc(t, K2, z)) * h/4;
+                K1 = x + (xDfunc(t, K1, z)+xDfunc(t, K2, z)*lMagic) * h/4;
+                K2 = x + (xDfunc(t, K1, z)*hMagic+xDfunc(t, K2, z)) * h/4;
+                
+                x = x + h/2 * (xDfunc(t, K1, z) + xDfunc(t, K2, z));
+        end
         t = t + h;
-        clc
-        fprintf('Progress %.1f%%', index / (resolution+1) *100);
+        if options.output
+            clc
+            fprintf('Progress %.1f%%', index / (resolution+1) *100);
+        end
     end
 end
