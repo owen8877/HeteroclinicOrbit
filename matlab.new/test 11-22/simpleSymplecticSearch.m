@@ -4,10 +4,13 @@ function xSolution = simpleSymplecticSearch(xDfunc, origin, target, step, ...
         options.output = true;
     end
     if ~isfield(options, 'endCriterion')
-        options.endCriterion = 2;
+        options.endCriterion = 40;
     end
     if ~isfield(options, 'method')
-        options.method = 'rk';
+        options.method = 'euler';
+    end
+    if ~isfield(options, 'torlerance')
+        options.torlerance = 1e-15;
     end
     
     h = step;
@@ -30,10 +33,8 @@ function xSolution = simpleSymplecticSearch(xDfunc, origin, target, step, ...
         
         switch options.method
             case 'euler'
-                k = x;
-                k = x + h/2 * xDfunc(t, k);
-                k = x + h/2 * xDfunc(t, k);
-                x = x + h * xDfunc(t, k);
+                newk = newtonSubSolver(x, @(k) x+h/2*xDfunc(t, k));
+                x = x + h * xDfunc(t, newk);
             case 'rk'
 %                 K1 = x + (xDfunc(t, x)+xDfunc(t, x)*lMagic) * h/4;
 %                 K2 = x + (xDfunc(t, K1)*hMagic+xDfunc(t, x)) * h/4;

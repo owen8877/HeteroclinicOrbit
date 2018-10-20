@@ -1,25 +1,14 @@
-clc; clear
+clc; clear global; clear
 
-% init
-q1Stable = -1/sqrt(2);
-q1Saddle = 0;
-% % for bio cases
-% ly = 0.010526161790107;
-% lx = 9.356588257872567e-06;
-% lVal = [lx; ly; 0; 0];
-% rx = 1.893653732450285e-04;
-% ry = 0.213036044900658;
-% rVal = [rx; ry; 0; 0];
-% % for prob cases
-% lVal = [-1; 0; 0; 0];
-% rVal = [-0.6; 0; 0; 0];
-% for self-made cases
-lVal = [-1; -1; 0; 0];
-rVal = [0; 0; 0; 0];
+%%
+% Preparations
+addpath testGen
+global Hqfunc Hpfunc Hfunc
+[lVal, rVal, Hqfunc, Hpfunc, Hfunc] = bioTestGen(false);
 
-resolution = 3000;
+resolution = 1000;
 leftSide = false;
-gridSearch = false;
+gridSearch = true;
 
 lHessian = notOrdinaryHessian(@(v) Hfunc(v(1:2), v(3:4)), lVal);
 [lV, lD] = eigs(lHessian, size(lHessian, 1), 'lr');
@@ -33,13 +22,13 @@ disp([lV rV]);
 % The following code gives a set of possible initial angle between eigen 
 % directions
 
-fais = linspace(0, 2*pi, 500)';
+fais = linspace(0, 2*pi, 100)';
 fais = fais(2:end);
 distance = [];
 notice = [];
 if gridSearch
     for fai = fais'
-        [thisDistance, ~] = simplexSearchWrapper(fai, leftSide, lVal, rVal, ...
+        [thisDistance, solution] = simplexSearchWrapper(fai, leftSide, lVal, rVal, ...
             lV, rV, lD, rD, @dHn, resolution);
         distance = [distance; thisDistance];
         fprintf('Searching %.6e with distance %.4e\n', fai, thisDistance);
@@ -58,7 +47,7 @@ end
 % initial = notice(1);
 % initial = 0.4649557127; % for self-made cases on the right, L=3
 % initial = 0.3769; % for self-made cases on the right, L=5
-initial = 0.3896; % with 0.2011, 0.3896, 0.5027, 0.8168, 1.2315, 4.9763
+% initial = 0.3896; % with 0.2011, 0.3896, 0.5027, 0.8168, 1.2315, 4.9763
 % a possible homoclinic trajectory
 % initials = [
 %     0.0754
@@ -79,11 +68,11 @@ initial = 0.3896; % with 0.2011, 0.3896, 0.5027, 0.8168, 1.2315, 4.9763
 %     2.9657
 %     ];
 % initial = 4.1552; % for prob cases
-% initial = 4; % for bio cases
+initial = 0;
 % initial = 2; % for self-made cases on the left, L=3
 step = pi/1000;
 
-[initialDis, ~] = simplexSearchWrapper(initial, leftSide, lVal, rVal, ...
+[initialDis, solution] = simplexSearchWrapper(initial, leftSide, lVal, rVal, ...
     lV, rV, lD, rD, @dHn, resolution);
 fprintf('Init dis %.4e\n', initialDis);
 
@@ -155,15 +144,19 @@ for step = 1:10
         leftValueKnown = true;
     end
 end
-richPlotHelper(0, solution, lVal, rVal, lVal, @Hfunc, @dH, ...
-    struct('extraPlot', true));
+richPlotHelper(0, solution, lVal, rVal, lVal, Hfunc, @dH, ...
+    struct('extraPlot', false));
 fprintf('initial %.4e final %.4e\n', initial, left);
 save('data/solution.mat', 'solution');
 
 %%
 function [distance, solution] = simplexSearchWrapper(fai, leftSide, lVal, rVal, lV, rV, lD, rD, dHn, resolution)
+    global Hfunc
     if ~leftSide
-        rAnchor = rVal + (rV(:, 1)*sin(fai) + rV(:, 2)*cos(fai)) / resolution;
+        delta = real(rV * (rD \ [cos(fai); sin(fai); 0; 0]));
+        delta = delta / norm(delta);
+        rAnchor = rVal - delta / resolution;
+        % rAnchor = rVal + (rV(:, 1)*sin(fai) + rV(:, 2)*cos(fai)) / resolution;
         lV_ = lV;
         lV_(:, [1 4]) = lV_(:, [4 1]);
         solution = simpleSymplecticSearch(@(~, v, ~) dHn(v(1:2), v(3:4)), ...
@@ -171,18 +164,14 @@ function [distance, solution] = simplexSearchWrapper(fai, leftSide, lVal, rVal, 
         solution = fliplr(solution);
         distance = norm(lVal - solution(:, 1));
     else
-        if isreal(lD(3, 3))
-            delta = lV(:, 4)*sin(fai) + lV(:, 3)*cos(fai);
-        else
-            delta = lV(:, 4)*sin(fai) + imag(lV(:, 3))*cos(fai);
-            delta = delta / norm(delta);
-        end
+        delta = real(lV * (lD \ [0; 0; cos(fai); sin(fai)]));
+        delta = delta / norm(delta);
         lAnchor = lVal + delta / resolution;
         solution = simpleSymplecticSearch(@(~, v, ~) dHn(v(1:2), v(3:4)), ...
             lAnchor, rVal, 1/resolution, 0, real(rV(:, 1)), struct('output', false));
         distance = norm(rVal - solution(:, end));
     end
-    % richPlotHelper(0, solution, lVal, rVal, lVal, @Hfunc, @dH, struct());
+%     richPlotHelper(0, solution, lVal, rVal, lVal, Hfunc, @dH, struct());
 end
 
 %%
@@ -191,175 +180,31 @@ function nv = normalize(v)
 end
 
 function dHv = dH(q, p)
+    global Hqfunc Hpfunc
     dHv = [Hpfunc(q, p); -Hqfunc(q, p)];
 end
 
 function dHv = nablaH(q, p)
+    global Hqfunc Hpfunc
     dHv = [Hqfunc(q, p); Hpfunc(q, p)];
 end
 
 function dHnv = dHn(q, p)
+    global Hqfunc Hpfunc
     dHv = [Hpfunc(q, p); -Hqfunc(q, p)];
     dHnv = dHv / norm(dHv);
 end
 
 function dHdpnv = dHdpn(q, p)
+    global Hqfunc Hpfunc
     dHv = [Hpfunc(q, p); -Hqfunc(q, p)];
     dHnv = dHv / norm(dHv);
     dHdpnv = dHnv(3:4);
 end
 
 function dHdqnv = dHdqn(q, p)
+    global Hqfunc Hpfunc
     dHv = [Hpfunc(q, p); -Hqfunc(q, p)];
     dHnv = dHv / norm(dHv);
     dHdqnv = dHnv(1:2);
 end
-
-%% Self-made case
-
-function Hpv = Hpfunc(q, p)
-    p1 = p(1); p2 = p(2);
-    q1 = q(1); q2 = q(2);
-    Hpv = [p1+q1-q1^3; p2+q2-q2^3];
-end
-
-function Hqv = Hqfunc(q, p)
-    p1 = p(1); p2 = p(2);
-    q1 = q(1); q2 = q(2);
-    L = 5;
-    Hqv = [p1*(1-3*q1^2)+2*((q2^2-1)*q1^2-L*(q1^2-1)*q2^2)*(2*q1*(q2^2-1)-L*2*q1*q2^2); ...
-        p2*(1-3*q2^2)+2*((q2^2-1)*q1^2-L*(q1^2-1)*q2^2)*(2*q2*q1^2-L*2*q2*(q1^2-1))];
-end
-
-function H = Hfunc(q, p)
-    p1 = p(1); p2 = p(2);
-    q1 = q(1); q2 = q(2);
-    L = 5;
-    H = (p1^2+p2^2)/2 + p1*(q1-q1^3) + p2*(q2-q2^3) + ...
-        ((q2^2-1)*q1^2-L*(q1^2-1)*q2^2)^2;
-end
-
-%% prob H func
-
-% function Hpv = Hpfunc(q, p)
-%     p1 = p(1); p2 = p(2);
-%     q1 = q(1); q2 = q(2);
-%     Hpv = [q2; p2/2+df(q1)*q2];
-% end
-% 
-% function Hqv = Hqfunc(q, p)
-%     p1 = p(1); p2 = p(2);
-%     q1 = q(1); q2 = q(2);
-%     Hqv = [p2*q2*ddf(q1)+2*(q2-f(q1))*df(q1); p1+p2*df(q1)-2*(q2-f(q1))];
-% end
-% 
-% function H = Hfunc(q, p)
-%     p1 = p(1); p2 = p(2);
-%     q1 = q(1); q2 = q(2);
-%     H = p1*q2 + p2*(p2/4+df(q1)*q2) - (q2-f(q1))^2;
-% end
-% 
-% function fv = f(x)
-% %     fv = 5*x^5 + 8*x^4 + 3*x^3;
-%     fv = -(5*x^4 + 8*x^3 + 3*x^2);
-% %     fv = 12*x^3 + 12*x^2;
-% %     fv = 2*x^3 - x/2;
-% %     fv = 4*x^3 - 2*x;
-% end
-% 
-% function dfv = df(x)
-% %     dfv = 25*x^4 + 32*x^3 + 9*x^2;
-%     dfv = -(20*x^3 + 24*x^2 + 6*x);
-% %     dfv = 36*x^2 + 24*x;
-% %     dfv = 6*x^2 - 1/2;
-% %     dfv = 12*x^2 - 2;
-% end
-% 
-% function ddfv = ddf(x)
-% %     ddfv = 100*x^3 + 96*x^2 + 18*x;
-%     ddfv = -(60*x^2 + 48*x + 6);
-% %     ddfv = 72*x + 24;
-% %     ddfv = 12*x;
-% %     ddfv = 24*x;
-% end
-
-%% bio H func
-
-% function dqHv = Hqfunc(q, p)
-%     h = 1e-8;
-%     dqHv = [ ...
-%         (Hfunc(q+[h; 0], p) - Hfunc(q-[h; 0], p)) / (2*h); ...
-%         (Hfunc(q+[0; h], p) - Hfunc(q-[0; h], p)) / (2*h) ...
-%         ];
-% end
-% 
-% function dpHv = Hpfunc(q, p)
-%     h = 1e-8;
-%     dpHv = [ ...
-%         (Hfunc(q, p+[h; 0]) - Hfunc(q, p-[h; 0])) / (2*h); ...
-%         (Hfunc(q, p+[0; h]) - Hfunc(q, p-[0; h])) / (2*h) ...
-%         ];
-% end
-% 
-% function H = Hfunc(q, p)
-%     gamma = 50;
-%     b = 22.5;
-%     x = q(1); y = q(2);
-%     px = p(1); py = p(2);
-%     A = y*(exp(-py)-1) + gamma*x*(exp(-px)-1) + gamma*b*x*(exp(py)-1);
-%     H = A + (A+(exp(px)-1)/b) * (fTilde(y)-A) / gTilde(y);
-% end
-% 
-% function param = getDefaultParam()
-%     param = struct();
-%     a = 320/3;
-%     b = 22.5;
-%     h = 2;
-%     param.a = a;
-%     param.b = b;
-%     param.K = a*b;
-%     param.k0min = a/100;
-%     param.k0max = a;
-%     param.k1min = a/100;
-%     param.k1max = a;
-%     param.gamma = 50;
-%     param.h = h;
-%     param.h1 = h;
-%     param.h2 = h;
-%     param.n50 = 1000;
-%     param.lambda = 1e-2;
-% end
-% 
-% function F = f(n)
-%     a = 320/3;
-%     k0min = a/100;
-%     k0max = a;
-%     h = 2;
-%     h1 = h;
-%     n50 = 1000;
-%     F = k0min + (k0max - k0min) * n^h1 / (n50^h1 + n^h1);
-% end
-% 
-% function G = g(n)
-%     a = 320/3;
-%     k1min = a/100;
-%     k1max = a;
-%     h = 2;
-%     h2 = h;
-%     n50 = 1000;
-%     G = k1max - (k1max - k1min) * n^h2 / (n50^h2 + n^h2);
-% end
-% 
-% function Ft = fTilde(y)
-%     a = 320/3;
-%     b = 22.5;
-%     K = a*b;
-%     Ft = f(y*K) / K;
-% end
-% 
-% function Gt = gTilde(y)
-%     a = 320/3;
-%     b = 22.5;
-%     K = a*b;
-%     Gt = g(y*K) / K;
-% end

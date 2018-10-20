@@ -10,8 +10,14 @@ function plotHelper(ax, data, xl, yl, interest)
     plot(xData(1), yData(1), 'ro');
     plot(xData(end), yData(end), 'bo');
 
-    if numel(interest) > 0
-        plot(interest(1, :), interest(2, :), 'm^', 'MarkerFaceColor', 'm');
+    if numel(interest) >= 1
+        plot(interest(1, 1), interest(2, 1), 'm^', 'MarkerFaceColor', 'm');
+    end
+    if numel(interest) >= 2
+        plot(interest(1, 2), interest(2, 2), 'm^', 'MarkerFaceColor', 'c');
+    end
+    if numel(interest) >= 3
+        plot(interest(1, 2), interest(2, 2), 'm^', 'MarkerFaceColor', 'k');
     end
 end
 
