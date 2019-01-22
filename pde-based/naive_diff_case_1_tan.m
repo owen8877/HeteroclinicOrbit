@@ -1,11 +1,17 @@
 clear; %clc
 
+% h0 = 1/8;
 h0 = 1/16;
-adaptive = false;
+% h0 = 1/32;
+adaptive = true;
+dirichlet = false;
+explicit = true;
+highAccuIm = false;
+save_filename = 'plot-data/non-adaptive.mat';
 
 if adaptive
-    h = h0*pi/8;
-    grids = (-pi/2):(h0*pi/8):(pi/2);
+    h = h0*pi/4;
+    grids = (-pi/2):(h0*pi/4):(pi/2);
 else
     h = h0;
     grids = (-6+h/2):h:(6-h/2);
@@ -19,27 +25,80 @@ sol = initialGenerator(grids, points);
 % q2Num = 1./sqrt(3*(1./q1Num.^2-1)+1);
 % sol = [q1Num; q2Num];
 
+torlerance = 1e-4;
+if explicit
+    if ~adaptive
+%         timeStep = 4e-3; maxItr = 0.5e4; % explicit, h = 1/8
+        timeStep = 1e-3; maxItr = 1e4; % explicit, h = 1/16
+%         timeStep = 4e-4; maxItr = 4e4; % explicit, h = 1/32
+        preExp = Inf;
+        plotInt = 50;
+        imStartTime = Inf;
+    else
+        timeStep = 8e-4; % explicit + adaptive
+        maxItr = 1e4;
+        preExp = Inf;
+        plotInt = 50;
+        imStartTime = Inf;
+    end
+else
+    if ~adaptive
+        imTimeStep = 8e-2; % implicit
+        timeStep = 1e-3;
+        maxItr = 400;
+        explicit = true;
+        preExp = 1e2;
+        plotInt = 20;
+    else
+        imTimeStep = 2e-2; % implicit + adaptive
+        timeStep = 8e-4;
+        maxItr = 500;
+        explicit = true;
+        preExp = 100;
+        plotInt = 10;
+    end
+end
+
 time = 0;
-timeStep = 2e-3;
 itr = 1;
-maxItr = 2e3;
-shape = size(sol);
 
 results = zeros(maxItr, 2, numel(grids));
+times = [];
 tic
 errorV = [];
 while itr <= maxItr
+    if itr > preExp && explicit
+        explicit = false;
+        timeStep = imTimeStep;
+        imStartTime = time;
+    end
+    
     lsol = laplacian(sol, h);
     dsol = derivative(sol, h);
 	if adaptive
-        sol = sol + (ReactionTerm(sol) + D*(cos(grids).^4.*lsol-2.*sin(grids).*cos(grids).^3.*dsol)) * timeStep;
+        if explicit
+            sol = sol + (ReactionTerm(sol) + D*(cos(grids).^4.*lsol-2.*sin(grids).*cos(grids).^3.*dsol)) * timeStep;
+        else
+            shape = size(sol);
+            A = @(v) truncationErrorTan(v, shape, timeStep, sol, grids, D, h, highAccuIm);
+            sol = reshape(pcg(A, reshape(sol/timeStep, prod(shape), 1), [], [], [], [], reshape(sol, prod(shape), 1)), shape(1), shape(2));
+        end
     else
-        % Explicit method
-%         sol = sol + (ReactionTerm(sol) + D*lsol) * timeStep;
-        % Implicit method
-        A = @(v) truncationError(v, shape, timeStep, sol, D, h);
-%         sol = reshape(pcg(A, zeros(numel(sol), 1), [], [], [], [], sol), shape(1), shape(2));
-        sol = reshape(pcg(A, reshape(sol/timeStep, prod(shape), 1), [], [], [], [], reshape(sol, prod(shape), 1)), shape(1), shape(2));
+        if explicit
+            % Explicit method
+            if dirichlet
+                midsol = sol(:, 2:end-1);
+                midlsol = lsol(:, 2:end-1);
+                sol(:, 2:end-1) = midsol + (ReactionTerm(midsol) + D*midlsol) * timeStep;
+            else
+                sol = sol + (ReactionTerm(sol) + D*lsol) * timeStep;
+            end
+        else
+            % Implicit method
+            shape = size(sol);
+            A = @(v) truncationError(v, shape, timeStep, sol, D, h, highAccuIm);
+            sol = reshape(pcg(A, reshape(sol/timeStep, prod(shape), 1), [], [], [], [], reshape(sol, prod(shape), 1)), shape(1), shape(2));
+        end
     end
     
     results(itr, :, :) = sol;
@@ -47,7 +106,7 @@ while itr <= maxItr
     time = time + timeStep;
     itr = itr + 1;
     
-    if mod(itr, 50) == 0
+    if mod(itr, plotInt) == 0
         if adaptive
             p = derivative(sol, h) .* cos(grids).^2 - hFunc(sol);
         else
@@ -56,20 +115,29 @@ while itr <= maxItr
         hamiltonian = hamiltonianFunc(sol, p);
         fprintf('Iteration % 6d, error in H %.6f.\n', itr, max(abs(hamiltonian)));
         errorV = [errorV max(abs(hamiltonian))];
+        times = [times time]; 
 %         figure(3); hold on; plot(hamiltonian)
+
+        if max(abs(hamiltonian)) < torlerance
+            break
+        end
     end
 end
 toc
+fprintf('Iterations used: %d.\n', itr);
 
 % figure(2); legend('1', '2', '3', '4', '5')
 
-figure(1)
-contour(permute(results(:, 1, :), [1 3 2]))
+% figure(1)
+% contour(permute(results(:, 1, :), [1 3 2]))
 
 % figure(3)
 % mesh(permute(results(:, 1, :), [1 3 2]))
 
-figure(4); semilogy(errorV)
+figure(4); semilogy(times, errorV); hold on
+xlabel('time')
+ylabel('|H|_\infty')
+plot([1 1]*imStartTime, ylim, 'r-.')
 figure(5); hold on
 q1s = 0.05:0.05:0.95;
 q2s = 1./sqrt(3*(1./q1s.^2-1)+1);
@@ -79,13 +147,34 @@ figure(6); hold on
 plot(-2*hFunc(q1s), -2*hFunc(q2s), 'r-.')
 scatter(p(1, :), p(2, :), 'b.')
 
-function b = truncationError(v, shape, timeStep, sol, D, h)
+% save(save_filename, 'times', 'errorV', 'sol', 'p')
+
+function b = truncationErrorTan(v, shape, timeStep, sol, grids, D, h, usecn)
     nsol = reshape(v, shape(1), shape(2));
-    % Backward Euler
-%     t = nsol/timeStep - (ReactionTerm(nsol) + D*laplacian(nsol, h));
-    % Crank-Nicolson
-    t = nsol/timeStep - ((ReactionTerm(sol) + D*laplacian(sol, h))+(ReactionTerm(nsol) + D*laplacian(nsol, h)))/2;
-%     t = (nsol-sol)/timeStep - (ReactionTerm(nsol) + D*laplacian(nsol, h));
+    lnsol = laplacian(nsol, h);
+    dnsol = derivative(nsol, h);
+    if ~usecn
+        % Backward Euler
+        t = nsol/timeStep - (ReactionTerm(nsol) + D*(cos(grids).^4.*lnsol-2.*sin(grids).*cos(grids).^3.*dnsol));
+    else
+        lsol = laplacian(sol, h);
+        dsol = derivative(sol, h);
+        % Crank-Nicolson
+        t = nsol/timeStep - ((ReactionTerm(sol) + D*(cos(grids).^4.*lsol-2.*sin(grids).*cos(grids).^3.*dsol))...
+            + (ReactionTerm(nsol) + D*(cos(grids).^4.*lnsol-2.*sin(grids).*cos(grids).^3.*dnsol)))/2;
+    end
+    b = reshape(t, numel(nsol), 1);
+end
+
+function b = truncationError(v, shape, timeStep, sol, D, h, usecn)
+    nsol = reshape(v, shape(1), shape(2));
+    if ~usecn
+        % Backward Euler
+        t = nsol/timeStep - (ReactionTerm(nsol) + D*laplacian(nsol, h));
+    else
+        % Crank-Nicolson
+        t = nsol/timeStep - ((ReactionTerm(sol) + D*laplacian(sol, h))+(ReactionTerm(nsol) + D*laplacian(nsol, h)))/2;
+    end
     b = reshape(t, numel(nsol), 1);
 end
 

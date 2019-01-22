@@ -1,4 +1,4 @@
-function [lVal, rVal, Hqf, Hpf, Hf] = selfTestGen()
+function [lVal, rVal, Hqf, Hpf, Hf] = selfTestGen(~)
     lVal = [-1; -1; 0; 0];
     rVal = [0; 0; 0; 0];
     Hqf = @Hqfunc;

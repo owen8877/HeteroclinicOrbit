@@ -64,8 +64,8 @@ h = 1/16;
 grid = (-12+h/2):h:(12-h/2);
 points = [positionA positionD]';
 
-if exist('backup/matlabAD.mat', 'file')
-    load('backup/matlabAD.mat');
+if exist('backup.old/matlabAD.mat', 'file')
+    load('backup.old/matlabAD.mat');
 else
 %     sol = initialGenerator(grid, points);
     sol = mergeInit();
@@ -141,7 +141,7 @@ while itr <= maxItr
 end
 toc
 
-save('backup/matlabAD.mat', 'sol')
+% save('backup.old/matlabAD.mat', 'sol')
 
 figure(2); legend('1', '2', '3', '4', '5')
 figure(3); legend('1', '2', '3', '4', '5')

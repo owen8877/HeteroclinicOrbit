@@ -28,10 +28,12 @@
 \output_sync 0
 \bibtex_command default
 \index_command default
+\float_placement th
 \paperfontsize default
+\spacing single
 \use_hyperref false
 \papersize default
-\use_geometry false
+\use_geometry true
 \use_package amsmath 1
 \use_package amssymb 1
 \use_package cancel 1
@@ -44,6 +46,7 @@
 \use_package undertilde 1
 \cite_engine basic
 \cite_engine_type default
+\biblio_style plain
 \use_bibtopic false
 \use_indices false
 \paperorientation portrait
@@ -55,6 +58,10 @@
 \shortcut idx
 \color #008000
 \end_index
+\leftmargin 3cm
+\topmargin 3cm
+\rightmargin 3cm
+\bottommargin 3cm
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
@@ -89,7 +96,7 @@ Example Systems
 \end_layout
 
 \begin_layout Standard
-Here we restrict the topic to Hamilton systems, i.e.
+Here we restrict the topic to Hamiltonian systems, i.e.
  looking for a solution 
 \begin_inset Formula $\left(q\left(t\right),p\left(t\right)\right),-\infty\le t\le+\infty$
 \end_inset
@@ -99,19 +106,19 @@ Here we restrict the topic to Hamilton systems, i.e.
 
 \begin_layout Standard
 \begin_inset Formula 
-\[
+\begin{equation}
 \begin{cases}
 \dot{q} & =\dfrac{\partial H}{\partial p}\\
 \dot{p} & =-\dfrac{\partial H}{\partial q}
-\end{cases},
-\]
+\end{cases},\label{eq:general-hamilton-system}
+\end{equation}
 
 \end_inset
 
-while at the same time
+while the boundary conditon is
 \begin_inset Formula 
 \[
-H\left(q\left(-\infty\right),p\left(-\infty\right)\right)=H\left(q\left(+\infty\right),p\left(+\infty\right)\right)=0.
+\nabla H\left(q\left(-\infty\right),p\left(-\infty\right)\right)=\nabla H\left(q\left(+\infty\right),p\left(+\infty\right)\right)=0.
 \]
 
 \end_inset
@@ -123,28 +130,1828 @@ H\left(q\left(-\infty\right),p\left(-\infty\right)\right)=H\left(q\left(+\infty\
 (Generalized) Simple Gradient System
 \end_layout
 
+\begin_layout Standard
+A simple system is proposed as 
+\begin_inset Formula 
+\begin{equation}
+H_{1}=\frac{1}{2}p^{2}+p\left(q-q^{3}\right).\label{eq:form-p1-1}
+\end{equation}
+
+\end_inset
+
+The analytical solution to Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:form-p1-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ is 
+\begin_inset Formula 
+\[
+\begin{cases}
+q\left(t\right) & =-\frac{1}{\sqrt{1+\exp\left(2t\right)}}\\
+p\left(t\right) & =2\left(q\left(t\right)^{3}-q\left(t\right)\right)
+\end{cases}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+System described by Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:form-p1-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ can be easily extended to higher dimensions, such as
+\begin_inset Formula 
+\begin{equation}
+H_{2}=\frac{1}{2}\sum_{i=1}^{2}p_{i}^{2}+\sum_{i=1}^{2}p_{i}\left(q_{i}-q_{i}^{3}\right)+\left[\left(q_{2}^{2}-1\right)q_{1}^{2}-L\left(q_{1}^{2}-1\right)q_{2}^{2}\right]^{2},\label{eq:form-p1-2}
+\end{equation}
+
+\end_inset
+
+of which the solution is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\left(q_{1},q_{2},p_{1},p_{2}\right)=\left(q_{2}\sqrt{\frac{L}{1+\left(L-1\right)q_{2}^{2}}},\frac{1}{\sqrt{1+\exp\left(2t\right)}},2\left(q_{1}^{3}-q_{1}\right),2\left(q_{2}^{3}-q_{2}\right)\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
-Bio-related Jump-driven System
+Seven-atom hexagonal Lennard-Jones cluster
+\end_layout
+
+\begin_layout Standard
+The system is a gradient one (see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "doi:10.1063/1.476378"
+literal "false"
+
+\end_inset
+
+), proposed as 
+\begin_inset Formula 
+\begin{equation}
+H=\frac{1}{2}p^{T}\cdot p+\nabla V^{T}\cdot p,\label{eq:form-p2}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula 
+\[
+V=\sum_{i<j}v\left(r_{ij}\right),v\left(r\right)\triangleq4\left(r^{-12}-r^{-6}\right).
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
 Non-gradient System
 \end_layout
 
+\begin_layout Standard
+This system is proposed in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Newman1990"
+literal "false"
+
+\end_inset
+
+ as
+\begin_inset Formula 
+\begin{equation}
+H=p_{1}\cdot q_{2}+p_{2}\left[\frac{1}{4}p_{2}+f'\left(q_{1}\right)q_{2}\right]\text{−}\left(q_{2}\text{−}f\left(q_{1}\right)\right)^{2},\label{eq:form-p3}
+\end{equation}
+
+\end_inset
+
+where 
+\begin_inset Formula $f$
+\end_inset
+
+ has at least two roots.
+\end_layout
+
 \begin_layout Section
-Characteristic-based methods
+Eigenvalue-based method
+\end_layout
+
+\begin_layout Subsection
+Method Description
 \end_layout
 
 \begin_layout Standard
-It is quite obvious that 
+It is quite obvious that around the steady states 
+\begin_inset Formula $\left(q\left(\pm\infty\right),p\left(\pm\infty\right)\right)$
+\end_inset
+
+, the system described in Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:general-hamilton-system"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ can be analyzed in a linearized form.
+\end_layout
+
+\begin_layout Standard
+Suppose the solution can be arclength-parameterized, i.e.
+\begin_inset Formula 
+\[
+S\triangleq\int_{-\infty}^{+\infty}\sqrt{\left(\dfrac{d}{dt}q\right)^{2}+\left(\dfrac{d}{dt}p\right)^{2}}dt<\infty.
+\]
+
+\end_inset
+
+Thus a arclength mapping 
+\begin_inset Formula $s\left(t\right)$
+\end_inset
+
+ can be defined as
+\begin_inset Formula 
+\begin{equation}
+s\left(t\right)\triangleq\frac{1}{S}\int_{-\infty}^{t}\sqrt{\left(\dfrac{d}{dt_{1}}q\right)^{2}+\left(\dfrac{d}{dt_{1}}p\right)^{2}}dt_{1}.\label{eq:cm-mapping}
+\end{equation}
+
+\end_inset
+
+We define 
+\begin_inset Formula $\widehat{q}$
+\end_inset
+
+ and 
+\begin_inset Formula $\widehat{p}$
+\end_inset
+
+ accordingly:
+\begin_inset Formula 
+\begin{align*}
+\widehat{q}\left(s\right)\triangleq q\left(t^{-1}\left(s\right)\right)\\
+\widehat{p}\left(s\right)\triangleq p\left(t^{-1}\left(s\right)\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Suppose the trajectory 
+\begin_inset Formula $\left(\widehat{q},\widehat{p}\right)$
+\end_inset
+
+ is 
+\begin_inset Formula $C^{\left(1\right)}$
+\end_inset
+
+ on 
+\begin_inset Formula $s\in[0,1]$
+\end_inset
+
+.
+ If we want to investigate how the trajectory is coming out from 
+\begin_inset Formula $\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)$
+\end_inset
+
+, we can introduce 
+\begin_inset Formula $\delta\widehat{q}\left(s\right)=\widehat{q}\left(s\right)-\widehat{q}\left(0\right)$
+\end_inset
+
+
+\begin_inset Formula $,\delta\widehat{p}\left(s\right)=\widehat{p}\left(s\right)-\widehat{p}\left(0\right)$
+\end_inset
+
+ and observe that
+\begin_inset Formula 
+\begin{align}
+\dfrac{d}{ds}\widehat{q}\left(s\right) & =\dfrac{d}{dt}q\left(t\right)\cdot\dfrac{dt}{ds}\nonumber \\
+ & =H_{p}\left(q\left(t\right),p\left(t\right)\right)\cdot\dfrac{dt}{ds}\nonumber \\
+ & =H_{p}\left(q\left(t^{-1}\left(s\right)\right),p\left(t^{-1}\left(s\right)\right)\right)\cdot\dfrac{dt}{ds}\nonumber \\
+ & =\left[H_{pq}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)\cdot\delta_{0}\widehat{q}\left(s\right)+H_{pp}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)\cdot\delta_{0}\widehat{p}\left(s\right)+\boldsymbol{O}\left(s^{2}\right)\right]\cdot\dfrac{dt}{ds}\label{eq:cm-dqds}
+\end{align}
+
+\end_inset
+
+and the same goes to 
+\begin_inset Formula $\dfrac{d}{ds}\widehat{p}\left(s\right)$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{align}
+\dfrac{d}{ds}\widehat{p}\left(s\right) & =\dfrac{d}{dt}p\left(t\right)\cdot\dfrac{dt}{ds}\nonumber \\
+ & =-H_{q}\left(q\left(t\right),p\left(t\right)\right)\cdot\dfrac{dt}{ds}\nonumber \\
+ & =-H_{q}\left(q\left(t^{-1}\left(s\right)\right),p\left(t^{-1}\left(s\right)\right)\right)\cdot\dfrac{dt}{ds}\nonumber \\
+ & =-\left[H_{qq}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)\cdot\delta_{0}\widehat{q}\left(s\right)+H_{qp}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)\cdot\delta_{0}\widehat{p}\left(s\right)+\boldsymbol{O}\left(s^{2}\right)\right]\cdot\dfrac{dt}{ds}\label{eq:cm-dpds}
+\end{align}
+
+\end_inset
+
+by using the fact that 
+\begin_inset Formula $\nabla H\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)=0$
+\end_inset
+
+.
+ If we let 
+\begin_inset Formula $s\to0$
+\end_inset
+
+, Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:cm-dqds"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:cm-dpds"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ will lead to
+\begin_inset Formula 
+\begin{equation}
+\lim_{s\to0}\frac{\delta_{0}\widehat{q}\left(s\right)}{\delta_{0}\widehat{p}\left(s\right)}=\lim_{s\to0}-\frac{H_{pq}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)\cdot\delta_{0}\widehat{q}\left(s\right)+H_{pp}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)\cdot\delta_{0}\widehat{p}\left(s\right)}{H_{qq}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)\cdot\delta_{0}\widehat{q}\left(s\right)+H_{qp}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)\cdot\delta_{0}\widehat{p}\left(s\right)},\label{eq:cm-lim}
+\end{equation}
+
+\end_inset
+
+which implies that 
+\begin_inset Formula $\lim_{s\to0}\mathbf{normal}\left(\delta_{0}\widehat{q}\left(s\right),\delta_{0}\widehat{p}\left(s\right)\right)=\left(u,v\right)$
+\end_inset
+
+ is the eigen vector of the following eigen problem:
+\begin_inset Formula 
+\begin{equation}
+\lambda_{0}\left[\begin{array}{c}
+u\\
+v
+\end{array}\right]=L_{H}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)\left[\begin{array}{c}
+u\\
+v
+\end{array}\right],L_{H}\triangleq\left[\begin{array}{cc}
+\partial_{pq} & \partial_{pp}\\
+-\partial_{qq} & -\partial_{qp}
+\end{array}\right]H.\label{eq:cm-eig-0}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $\lambda_{0}$
+\end_inset
+
+, the eigenvalue should be the most positive since it dominates the limit
+ in Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:cm-lim"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ We can similarly write the according conclusion for the other steady point,
+ which reads
+\begin_inset Formula 
+\begin{equation}
+\lambda_{1}\left[\begin{array}{c}
+u\\
+v
+\end{array}\right]=L_{H}\left(\widehat{q}\left(1\right),\widehat{p}\left(1\right)\right)\left[\begin{array}{c}
+u\\
+v
+\end{array}\right]\label{eq:cm-eig-1}
+\end{equation}
+
+\end_inset
+
+for 
+\begin_inset Formula $\lim_{s\to0}\mathbf{normal}\left(\delta_{1}\widehat{q}\left(s\right),\delta_{1}\widehat{p}\left(s\right)\right)=\left(u,v\right),\delta_{1}f\left(s\right)=f\left(s\right)-f\left(1\right)$
+\end_inset
+
+, where 
+\begin_inset Formula $\lambda_{1}$
+\end_inset
+
+ should be the most negative eigenvalue.
+\end_layout
+
+\begin_layout Subsection
+Algorithm
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:cm-Algorithms"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The tricky part is that we don't know 
+\begin_inset Formula $S$
+\end_inset
+
+ beforehand, so the mapping described in Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:cm-mapping"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ can only be written as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\widetilde{s}\left(t\right)\triangleq\int_{-\infty}^{t}\sqrt{\left(\dfrac{d}{dt_{1}}q\right)^{2}+\left(\dfrac{d}{dt_{1}}p\right)^{2}}dt_{1},\widetilde{s}:\mathbb{R}\to(0,S)
+\]
+
+\end_inset
+
+with the upper bound 
+\begin_inset Formula $S$
+\end_inset
+
+ unknown.
+ If we take 
+\begin_inset Formula $\widetilde{s}\left(t\right)$
+\end_inset
+
+ back into Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:general-hamilton-system"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, we can propose the following scheme:
+\end_layout
+
+\begin_layout Enumerate
+Choose a proper starting direction 
+\begin_inset Formula $\left(u,v\right)$
+\end_inset
+
+, which is the eigen solution of Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:cm-eig-0"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Assign 
+\begin_inset Formula $x_{0}=\left(u,v\right)\cdot\Delta h+\left(q\left(-\infty\right),p\left(-\infty\right)\right)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Based on 
+\begin_inset Formula $x_{n}=\left(\widetilde{q}\left(\widetilde{s}_{n}\right),\widetilde{p}\left(\widetilde{s}_{n}\right)\right),\widetilde{s}_{n}=n\Delta h$
+\end_inset
+
+, calculate the update direction using an ODE integrator.
+\end_layout
+
+\begin_layout Enumerate
+Determine if 
+\begin_inset Formula $x_{n+1}$
+\end_inset
+
+ is close to 
+\begin_inset Formula $\left(q\left(+\infty\right),p\left(+\infty\right)\right)$
+\end_inset
+
+ enough.
+ If not, continue to Step 2.
+\end_layout
+
+\begin_layout Standard
+Now we explain the procedures in detail.
+\end_layout
+
+\begin_layout Subsubsection
+Choice of the Initial Direction
+\end_layout
+
+\begin_layout Standard
+It is clear when 
+\begin_inset Formula $L_{H}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)$
+\end_inset
+
+ has only one most positive eigenvalue 
+\begin_inset Formula $\lambda_{+}$
+\end_inset
+
+, while the choice maybe difficult if 
+\begin_inset Formula $\lambda_{+}$
+\end_inset
+
+ is a multiple eigenvalue.
+ If it is the case, we can have a grid search in the space 
+\begin_inset Formula $\text{Ker}\left(\lambda_{+}I-L_{H}\left(\widehat{q}\left(0\right),\widehat{p}\left(0\right)\right)\right)$
+\end_inset
+
+ by its coordinate form.
+ More specifically, since our problems are at most 2-dimensional, the eigenspace
+ is at most two dimension, so a line search in the polar coordinate is enough.
+\end_layout
+
+\begin_layout Subsubsection
+ODE Integrator
+\end_layout
+
+\begin_layout Standard
+It is tempting to only use a simple integrator for proof for concept (like
+ forward Euler), but since we are dealing with Hamiltonian systems, we should
+ better preserve the hamiltonian, which can be achieved if we use symplectic
+ schemes (like Mid-point Euler with estimation-correction).
+\end_layout
+
+\begin_layout Subsubsection
+Stop Criterion
+\end_layout
+
+\begin_layout Standard
+Notice that 
+\begin_inset Formula $\lim_{s\to0}\mathbf{normal}\left(\delta_{1}\widehat{q}\left(s\right),\delta_{1}\widehat{p}\left(s\right)\right)$
+\end_inset
+
+ is an eigen solution to Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:cm-eig-1"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ with negative eigenvalue, so in general any numerical error will be greatly
+ magnified when 
+\begin_inset Formula $s\to S$
+\end_inset
+
+, pushing the numerical solution onto the unstable manifold around 
+\begin_inset Formula $\left(q\left(+\infty\right),p\left(+\infty\right)\right)$
+\end_inset
+
+.
+ A way to stop the integration at a proper time is to check the distance
+ between 
+\begin_inset Formula $x_{n}$
+\end_inset
+
+ and the steady point 
+\begin_inset Formula $\left(q\left(+\infty\right),p\left(+\infty\right)\right)$
+\end_inset
+
+.
+ If the distance is small enough (less than a given torlerance), we can
+ accept the trajectory and stop the integration.
+\end_layout
+
+\begin_layout Subsection
+Numerical Experiments
+\end_layout
+
+\begin_layout Standard
+Here we demonstrate the solution obtained by carrying out the algorithm
+ described in 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:cm-Algorithms"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ The first problem is tested, results shown in Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cm-p1-solution"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:cm-p1-error"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ As least for this simple problem this method fits quite well, and the overall
+ error (estimated from 
+\begin_inset Formula $\max\left|H\right|$
+\end_inset
+
+) can be controlled by decreasing the step used in the integrator.
+ Since we are using symplectic schemes, the hamiltonian is well preserved.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/cm/p1-solution.epsc
+	width 100line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Solution obtained numerically(blue line) and analytically(red line).
+ Notice that the solution starts to be unstable when reaching 
+\begin_inset Formula $s\to1$
+\end_inset
+
+(red circle).
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cm-p1-solution"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/cm/p1-H-error.epsc
+	width 50line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Estimating the error by measuring 
+\begin_inset Formula $\left|H\right|$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:cm-p1-error"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+However in general, this eigenvalue-based method is not quite as stable
+ as it is shown in the previous example.
+ It is very likely caused by the illposedness near the steady points, where
+ the hamiltonian can change drastically.
 \end_layout
 
 \begin_layout Section
-Iterative methods
+PDE-based method
 \end_layout
 
-\begin_layout Section
-PDE-based methods
+\begin_layout Subsection
+Method Description
+\end_layout
+
+\begin_layout Standard
+The PDE-based method comes from an observation that, if the system is merely
+ more than a gradient system, i.e.
+\begin_inset Formula 
+\[
+H=\frac{1}{2}p^{T}p+b\left(q\right)^{T}p+l\left(q\right),b=\nabla V,
+\]
+
+\end_inset
+
+which leads to
+\begin_inset Formula 
+\begin{equation}
+\begin{cases}
+\dot{q} & =\dfrac{\partial H}{\partial p}=p+b\\
+\dot{p} & =-\dfrac{\partial H}{\partial q}=-\left(\left(\nabla b\right)^{T}p+\nabla l\right)
+\end{cases},\label{eq:pde-formation-h}
+\end{equation}
+
+\end_inset
+
+we can explicitly solve 
+\begin_inset Formula $p$
+\end_inset
+
+ by the first line in Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde-formation-h"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and take that into the second line, giving
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\left(\nabla b-\nabla b^{T}\right)\dot{q}=\ddot{q}-\nabla b^{T}\cdot b+\nabla l.
+\]
+
+\end_inset
+
+But if we are only dealing with gradient systems, i.e.
+ 
+\begin_inset Formula $b=\nabla V$
+\end_inset
+
+, the vector gradient 
+\begin_inset Formula $\nabla b=\Delta V$
+\end_inset
+
+ will be symmetric.
+ In this sense, we are looking for a solution to the second-order ODE
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+0=\ddot{q}-\nabla b^{T}\cdot b+\nabla l.\label{eq:pde-formation-2nd}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Actually the solution to Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde-formation-2nd"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ is exactly a non-moving travelling wave solution to the following PDE:
+\begin_inset Formula 
+\begin{equation}
+\partial_{t}q=\partial_{x}^{2}q-\nabla b^{T}\cdot b+\nabla l.\label{eq:pde}
+\end{equation}
+
+\end_inset
+
+Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ is also known as a reaction-diffusion equation, which is a 
+\begin_inset Quotes eld
+\end_inset
+
+heat equation
+\begin_inset Quotes erd
+\end_inset
+
+ with a reaction term 
+\begin_inset Formula $-\nabla b^{T}\cdot b+\nabla l$
+\end_inset
+
+.
+ Since Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ acts locally like a heat equation, it also shares some nice features such
+ as smoothness of the solution.
+\end_layout
+
+\begin_layout Subsection
+Algorithm
+\end_layout
+
+\begin_layout Standard
+Most of the work below is on how to correctly solve the PDE in Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Except the reparameterization method, we suppose that 
+\begin_inset Formula $q\left(x,t\right)$
+\end_inset
+
+ is discretized on the grid of 
+\begin_inset Formula $\text{grid}\left(-A,A,h\right)\times\text{grid}\left(0,T,\tau\right)$
+\end_inset
+
+, where 
+\begin_inset Formula $\text{grid\left(l,r,\delta\right)=\left\{  l,l+\delta,\dots\,r-\delta,r\right\}  }$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Boundary Conditions
+\end_layout
+
+\begin_layout Standard
+There are roughly two conditions to choose: Dirichlet and Neumann condition.
+\end_layout
+
+\begin_layout Itemize
+Dirichlet condition: 
+\begin_inset Formula $q\left(-A,t\right)=q_{-\infty},q\left(+A,t\right)=q_{+\infty}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+Neumann condition: 
+\begin_inset Formula $\partial_{x}q\left(-A,t\right)=\partial_{x}q\left(+A,t\right)=0$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Update Scheme
+\end_layout
+
+\begin_layout Standard
+We included the following three schemes (donoting 
+\begin_inset Formula $f\left(q\right)\triangleq-\nabla b^{T}\cdot b+\nabla l$
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Itemize
+Forward Euler (explicit scheme): 
+\begin_inset Formula 
+\begin{equation}
+\frac{\Delta_{+\tau}}{\tau}\left(q\left(x,t\right)\right)=\frac{\delta_{h}^{2}}{h^{2}}\left(q\left(x,t\right)\right)+f\left(q\left(x,t\right)\right).\label{eq:pde-forward-euler}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Backward Euler (implicit scheme): 
+\begin_inset Formula 
+\[
+\frac{\Delta_{+\tau}}{\tau}\left(q\left(x,t\right)\right)=\frac{\delta_{h}^{2}}{h^{2}}\left(q\left(x,t+\tau\right)\right)+f\left(q\left(x,t+\tau\right)\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Crank-Nicolson (implicit scheme): 
+\begin_inset Formula 
+\[
+\frac{\Delta_{+\tau}}{\tau}\left(q\left(x,t\right)\right)=\frac{1}{2}\left[\frac{\delta_{h}^{2}}{h^{2}}\left(q\left(x,t\right)\right)+f\left(q\left(x,t\right)\right)+\frac{\delta_{h}^{2}}{h^{2}}\left(q\left(x,t+\tau\right)\right)+f\left(q\left(x,t+\tau\right)\right)\right].
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Stop Criterion
+\end_layout
+
+\begin_layout Standard
+Since we are interested in finding a path that preserves 
+\begin_inset Formula $H=0$
+\end_inset
+
+, it is convincing to use 
+\begin_inset Formula $\left|H\left(q\left(\xi\right),p\left(\xi\right)\right)\right|_{\infty}$
+\end_inset
+
+ as an indication if 
+\begin_inset Formula $q\left(x,t\right)$
+\end_inset
+
+ is close to 
+\begin_inset Formula $q_{0}\left(\xi\right)=q\left(\xi,\infty\right)$
+\end_inset
+
+ enough.
+ To obtain 
+\begin_inset Formula $H$
+\end_inset
+
+, we have to obtain 
+\begin_inset Formula $p\left(\xi\right)$
+\end_inset
+
+ by
+\begin_inset Formula 
+\begin{equation}
+p\left(\xi\right)=\dot{q}\left(\xi\right)-b\left(q\left(\xi\right)\right).\label{eq:pde-restore-p}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A tricky thing is that Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde-restore-p"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ is directional, i.e.
+ 
+\begin_inset Formula $q\left(-\xi\right)$
+\end_inset
+
+ will not give the correct 
+\begin_inset Formula $p\left(\xi\right)$
+\end_inset
+
+, so we should know which direction the trajectory is (it is also quite
+ important in the original system).
+\end_layout
+
+\begin_layout Subsubsection
+Change in coordinate
+\end_layout
+
+\begin_layout Standard
+Still Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ contains infinite range for 
+\begin_inset Formula $x$
+\end_inset
+
+, which introduces quite a lot truncation error; which is worse is that
+ on most of the nodes the solution 
+\begin_inset Formula $q\left(x,t\right)$
+\end_inset
+
+ is quite 
+\begin_inset Quotes eld
+\end_inset
+
+flat
+\begin_inset Quotes erd
+\end_inset
+
+.
+ A way to work around is to change the space coordinate 
+\begin_inset Formula $x$
+\end_inset
+
+ into another finite range coordinate 
+\begin_inset Formula $y$
+\end_inset
+
+.
+ One feasible mapping is the 
+\begin_inset Formula $\arctan$
+\end_inset
+
+ function:
+\begin_inset Formula 
+\[
+\mathring{q}\left(y,t\right)\triangleq q\left(\tan\left(x\right),t\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To tranform Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde-restore-p"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ into coordinate 
+\begin_inset Formula $\left(y,t\right)$
+\end_inset
+
+, we should eliminate 
+\begin_inset Formula $x$
+\end_inset
+
+ by chain rules:
+\begin_inset Formula 
+\[
+\dfrac{\partial}{\partial y}\mathring{q}=\left(\dfrac{\partial}{\partial x}q\right)\cdot\left(\dfrac{dx}{dy}\right),
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\dfrac{\partial^{2}}{\partial y^{2}}\mathring{q}=\left(\dfrac{\partial^{2}}{\partial x^{2}}q\right)\cdot\left(\dfrac{dx}{dy}\right)^{2}+\left(\dfrac{\partial}{\partial x}q\right)\cdot\left(\dfrac{d^{2}x}{dy^{2}}\right),
+\]
+
+\end_inset
+
+so if we combine the two equations above
+\begin_inset Formula 
+\begin{align}
+\dfrac{\partial^{2}}{\partial x^{2}}q & =\left(\dfrac{\partial^{2}}{\partial y^{2}}\mathring{q}\right)\cdot\left(\dfrac{dy}{dx}\right)^{2}-\left(\dfrac{\partial}{\partial y}\mathring{q}\right)\cdot\left(\dfrac{d^{2}x}{dy^{2}}\right)\cdot\left(\dfrac{dy}{dx}\right)^{3}\label{eq:pde-transformed}\\
+ & =\left(\dfrac{\partial^{2}}{\partial y^{2}}\mathring{q}\right)\cos^{4}\left(y\right)-2\left(\dfrac{\partial}{\partial y}\mathring{q}\right)\sin\left(y\right)\cos\left(y\right)^{3}.\nonumber 
+\end{align}
+
+\end_inset
+
+Then we can apply the discussions occured in the previous subsubsections
+ onto the tranformed PDE (Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde-transformed"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Subsection
+Numerical Experiments
+\end_layout
+
+\begin_layout Subsubsection
+On Generalized Simple Gradient System
+\end_layout
+
+\begin_layout Standard
+First we should compare the two boundary conditions.
+ Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pde-dir-vs-neu"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the error in 
+\begin_inset Formula $\left|H\right|_{\infty}$
+\end_inset
+
+ as 
+\begin_inset Formula $t$
+\end_inset
+
+ grows.
+ From the figure it is clear that the two boundary conditions act almost
+ the same.
+ Since neumann boundary conditions are much easier to implement, we will
+ always use that in the following experiments.
+ This also shows that the pde-based method is at least feasible.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde/dir-vs-neu.epsc
+	width 50line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\infty$
+\end_inset
+
+-norm error in the hamiltonian.
+ Inset: a close look at where the stop criterion is about to be statisfied.
+ The 
+\begin_inset Formula $x$
+\end_inset
+
+-domain is 
+\begin_inset Formula $\text{grid}\left(-6,6,1/16\right)$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:pde-dir-vs-neu"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A next question is that if the space resolution is enough, i.e.
+ if the 
+\begin_inset Formula $h$
+\end_inset
+
+ in 
+\begin_inset Formula $\text{grid}\left(-6,6,h\right)$
+\end_inset
+
+ matters.
+ Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pde-step-time"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the comparison between different 
+\begin_inset Formula $\left(h,\tau\right)$
+\end_inset
+
+ settings.
+ It is quite clear that 
+\begin_inset Formula $h=\frac{1}{8}$
+\end_inset
+
+ is not precise enough and introduces some artificial errors, while 
+\begin_inset Formula $h=\frac{1}{16},\frac{1}{32}$
+\end_inset
+
+ gives similar results.
+ But from Fig we can see that 
+\begin_inset Formula $h=\frac{1}{16}$
+\end_inset
+
+ uses much fewer iterations, for smaller space step needs accordingly small
+ time step.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde/p1-step-time.epsc
+	width 50line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde/p1-step-iteration.epsc
+	width 50line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\infty$
+\end_inset
+
+-norm error in the hamiltonian when using different space discretization
+ step.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:pde-step-time"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Then we should compare if there is any improvement to use implicit update
+ scheme since every step it requires solving a non-linear system.
+ We will all use 
+\begin_inset Formula $h=\frac{1}{16}$
+\end_inset
+
+ for space discretization.One thing worth noticing is that to make sure implicit
+ methods are stable, we should run explicit methods beforehand to make the
+ initial boundary value close to the possibly desired solution.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde/p1-scheme-time.epsc
+	width 50line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde/p1-scheme-iteration.epsc
+	width 50line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\infty$
+\end_inset
+
+-norm error in the hamiltonian when using different update schemes.
+ Green dashed line indicates that we assume the solution is close enough
+ so that implicit method can take on over explicit methods.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:pde-scheme-time"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally we want to investigate if a change in the space coordinate can really
+ help to solve the system.
+ Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pde-arctan-error"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows how the remaining error 
+\begin_inset Formula $\left|H\right|_{\infty}$
+\end_inset
+
+ decreases as the algorithm iterates.
+ Although Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde-transformed"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ requires more calculation (like 
+\begin_inset Formula $\cos\left(y\right)^{4}$
+\end_inset
+
+) compared to the straight forward one (Eqn 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:pde"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), we can actually use less nodes to achieve almost the same precision (see
+ Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pde-arctan-qp"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:pde-arctan-arclength"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde/p1-arctan-error.epsc
+	width 50line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Comparison between two space coordinates choices.
+ A change in space coordinate does require more calculation, but we can
+ use less nodes and achieve faster speed (0.694s compared to 0.726s when there
+ is no such change).
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:pde-arctan-error"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde/p1-arctan-q.epsc
+	width 50line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde/p1-arctan-p.epsc
+	width 60line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Comparison between solution obtained under different space coordinate settings.
+ Red dashed line indicates the analytical solution.
+ Nodes on the right side plots are much separated.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:pde-arctan-qp"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde/p1-arctan-arclength.epsc
+	width 50line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Relation between normalized space coordinate and normalized arc-length.
+ Back dotted line indicates perfect arc-length parameterization.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:pde-arctan-arclength"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+On a seven-atom hexagonal Lennard-Jones cluster
+\end_layout
+
+\begin_layout Standard
+First we have to obtain the correct relative positions for each atom, which
+ is obtained by solving an optimization problem, given a hexagonal-positioning
+ initial guess.
+ Then we use the same algorithm introduced above to compute the trajectory
+ between each two configurations.
+ A tricky thing is that we cannot know the rotation beforehand (it is obvious
+ that the whole system should not have any non-zero angular momentum at
+ any time), and any rotated steady configuration is also a steady configuration,
+ so there maybe a net rotation after the transition, which is ill-posed
+ to some extent.
+ For numerical solutions, we refer to Fig 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:p2-error"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:p2-potential"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:p2-four-configurations"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde-p2/error.epsc
+	width 50line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\infty$
+\end_inset
+
+-norm error in the hamiltonian.
+ 
+\begin_inset Formula $\left(h,\tau\right)=\left(\frac{1}{8},10^{-5}\right)$
+\end_inset
+
+, time update scheme: explicit Euler.
+ Total time used for 2000 iterations: 75.80s.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:p2-error"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename pic/pde-p2/potential.epsc
+	width 60line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Potential changing along the arc length parameter.
+ From left to right: A(red), B(purple), C(yellow), D(green).
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:p2-potential"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename output-epsc/1.epsc
+	width 45line%
+
+\end_inset
+
+
+\begin_inset space \hspace*{\fill}
+\end_inset
+
+
+\begin_inset Graphics
+	filename output-epsc/46.epsc
+	width 45line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename output-epsc/76.epsc
+	width 45line%
+
+\end_inset
+
+
+\begin_inset space \hspace*{\fill}
+\end_inset
+
+
+\begin_inset Graphics
+	filename output-epsc/128.epsc
+	width 45line%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+From left to right, top to bottom: configuration A(left-top), B(right-top),
+ C(left-bottom), D(right-bottom).
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:p2-four-configurations"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "ref"
+options "apalike"
+
+\end_inset
+
+
 \end_layout
 
 \end_body

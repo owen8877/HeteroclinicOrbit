@@ -4,11 +4,12 @@ clc; clear global; clear
 % Preparations
 addpath testGen
 global Hqfunc Hpfunc Hfunc
-[lVal, rVal, Hqfunc, Hpfunc, Hfunc] = bioTestGen(false);
+[lVal, rVal, Hqfunc, Hpfunc, Hfunc] = selfTestGen(false);
 
 resolution = 1000;
 leftSide = false;
 gridSearch = true;
+search618Step = 1;
 
 lHessian = notOrdinaryHessian(@(v) Hfunc(v(1:2), v(3:4)), lVal);
 [lV, lD] = eigs(lHessian, size(lHessian, 1), 'lr');
@@ -46,7 +47,7 @@ end
 
 % initial = notice(1);
 % initial = 0.4649557127; % for self-made cases on the right, L=3
-% initial = 0.3769; % for self-made cases on the right, L=5
+initial = 0.3769; % for self-made cases on the right, L=5
 % initial = 0.3896; % with 0.2011, 0.3896, 0.5027, 0.8168, 1.2315, 4.9763
 % a possible homoclinic trajectory
 % initials = [
@@ -68,7 +69,7 @@ end
 %     2.9657
 %     ];
 % initial = 4.1552; % for prob cases
-initial = 0;
+% initial = 0;
 % initial = 2; % for self-made cases on the left, L=3
 step = pi/1000;
 
@@ -115,7 +116,7 @@ for i = 1:10
 end
 
 leftValueKnown = false; rightValueKnown = false;
-for step = 1:10
+for step = 1:search618Step
     midleft = right - (right-left) * (sqrt(5)-1)/2;
     midright = left + (right-left) * (sqrt(5)-1)/2;
     if ~leftValueKnown
@@ -145,7 +146,7 @@ for step = 1:10
     end
 end
 richPlotHelper(0, solution, lVal, rVal, lVal, Hfunc, @dH, ...
-    struct('extraPlot', false));
+    struct('extraPlot', true));
 fprintf('initial %.4e final %.4e\n', initial, left);
 save('data/solution.mat', 'solution');
 

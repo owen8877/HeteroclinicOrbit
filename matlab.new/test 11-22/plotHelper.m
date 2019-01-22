@@ -2,7 +2,7 @@ function plotHelper(ax, data, xl, yl, interest)
     xData = data(1, :);
     yData = data(2, :);
 
-    hold(ax, 'on');
+    hold(ax, 'on'); grid on
     plot(xData, yData);
     xlabel(xl);
     ylabel(yl);

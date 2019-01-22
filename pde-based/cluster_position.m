@@ -40,7 +40,7 @@ if adaptive
     grids = (-pi/2):(h0*pi/8):(pi/2);
 else
     h = h0;
-    grids = (-6+h/2):h:(6-h/2);
+    grids = (-4+h/2):h:(4-h/2);
 end
 
 points = [reshape(positionB, 1, 2*clusterN); reshape(positionA, 1, 2*clusterN)];
@@ -52,9 +52,11 @@ else
 end
 
 time = 0;
-timeStep = 1e-4;
+exTimeStep = 1e-5;
+imTimeStep = 1e-4;
 itr = 1;
-maxItr = 50;
+maxItr = 2000;
+preExp = 2000;
 shape = size(sol);
 
 for i = 1:4
@@ -64,17 +66,25 @@ end
 results = zeros(maxItr, 2*clusterN, numel(grids));
 tic
 errorV = [];
+times = [];
 while itr <= maxItr
     lsol = laplacian(sol, h);
     dsol = derivative(sol, h);
 	if adaptive
+        timeStep = exTimeStep;
         sol = sol + (ReactionTerm(sol) + (cos(grids).^4.*lsol-2.*sin(grids).*cos(grids).^3.*dsol)) * timeStep;
     else
-        % Explicit method
-%         sol = sol + (ReactionTerm(sol) + lsol) * timeStep;
-        % Implicit method
-        A = @(v) truncationError(v, shape, timeStep, sol, h);
-        sol = reshape(pcg(A, reshape(sol/timeStep, prod(shape), 1), [], [], [], [], reshape(sol, prod(shape), 1)), shape(1), shape(2));
+        if itr < preExp
+            timeStep = exTimeStep;
+            % Explicit method
+            sol = sol + (ReactionTerm(sol) + lsol) * exTimeStep;
+        else
+            timeStep = imTimeStep;
+            % Implicit method
+            guessSol = sol + (ReactionTerm(sol) + lsol) * exTimeStep;
+            A = @(v) truncationError(v, shape, timeStep, sol, h);
+            sol = reshape(pcg(A, reshape(sol/timeStep, prod(shape), 1), [], [], [], [], reshape(guessSol, prod(shape), 1)), shape(1), shape(2));
+        end
     end
     
     results(itr, :, :) = sol;
@@ -82,9 +92,22 @@ while itr <= maxItr
     time = time + timeStep;
     itr = itr + 1;
     
-    fprintf('%d\n', itr);
+    if itr < 20 || mod(itr, 20) == 0
+        for i = 1:size(sol, 2)
+            hV(:, i) = hFunc(sol(:, i));
+        end
+        if adaptive
+            p = derivative(sol, h) .* cos(grids).^2 - hV;
+        else
+            p = derivative(sol, h) - hV;
+        end
+        hamiltonV = hamiltonianFunc(sol, p);
+        fprintf('Iteration: %d, |H|: %.6f\n', itr, max(abs(hamiltonV)));
+        errorV = [errorV max(abs(hamiltonV))];
+        times = [times time];
+    end
     
-    if mod(itr, floor(maxItr/5)) == 0
+    if mod(itr, floor(maxItr/5)) == 0 && false
         figure(2); hold on
         potentials = zeros(size(sol, 2), 1);
         arclength = zeros(size(sol, 2), 1);
@@ -99,12 +122,6 @@ while itr <= maxItr
         potentials(end) = potentials(end-1);
         plot(cumsum(arclength), potentials*4)
         
-        if adaptive
-            p = derivative(sol, h) .* cos(grids).^2 - hV;
-        else
-            p = derivative(sol, h) - hV;
-        end
-        hamiltonV = hamiltonianFunc(sol, p);
         figure(3); hold on
         plot(hamiltonV)
         
@@ -140,7 +157,7 @@ while itr <= maxItr
 end
 toc
 
-save('backup/matlab.mat', 'sol')
+% save('backup/matlab.mat', 'sol')
 
 % figure(2); hold on; legend('1', '2', '3', '4', '5')
 % figure(3); hold on; legend('1', '2', '3', '4', '5')
